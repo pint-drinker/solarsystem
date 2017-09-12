@@ -40,12 +40,13 @@ class ThreeAxes {
   createLight() {
     const light = new THREE.AmbientLight(COLORS.soft_white, 0.8);
     this.scene.add(light);
+    return light;
   }
 
   drawAxes() {
     const loader = new THREE.FontLoader(); //for text annotaitons on axes
     const l = 10;
-    const origin = new THREE.Vector3(0, 0, -l / 3);
+    const origin = new THREE.Vector3(0, -l / 3, 0);
     const hl = l / 4;
     const hw = l / 5;
     const xarr = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, l, COLOR_CODES.x, hl, hw);

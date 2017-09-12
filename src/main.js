@@ -8,12 +8,22 @@ getNodeComputedProperty = (node, prop) => {
 
 class SolarSystem {
   constructor() {
-
+    // initializing node
     this.node = document.getElementById("container");
-    this.nodeWidth = parseInt(getNodeComputedProperty(document.getElementById("container"), 'width'));
-    this.nodeHeight = parseInt(getNodeComputedProperty(document.getElementById("container"), 'height'));
+    this.node.width = window.innerWidth;
+    this.node.height = window.innerHeight;
+    this.nodeWidth = window.innerWidth;
+    this.nodeHeight = window.innerHeight;
 
-    this.sun_geometry = new THREE.SphereGeometry(20, 25, 25);
+    // bodies
+    // this.stars = stars;
+
+    // number of calculations per second
+    this.numberOfCalculationsPerFrame = 1000;
+    // The length of the time increment, in seconds.
+    this.deltaT = 3600 * 24 / this.numberOfCalculationsPerFrame;
+
+    this.sun_geometry = new THREE.SphereGeometry(SUN0.radius / SUN_SCALE, 25, 25);
     this.sun_material = new THREE.MeshPhysicalMaterial( {
       color: MATERIAL_PROPERTIES.color, 
       transparent: false, 
@@ -24,7 +34,8 @@ class SolarSystem {
     this.sun = new THREE.Mesh(this.sun_geometry, this.sun_material);
 
 
-    this.earth_geometry = new THREE.SphereGeometry(5, 25, 25);
+    // old way with the earth
+    this.earth_geometry = new THREE.SphereGeometry(EARTH0.radius / PLANET_SCALE, 25, 25);
     this.earth_material = new THREE.MeshPhysicalMaterial( {
       color: COLORS.blue, 
       transparent: false, 
@@ -35,15 +46,10 @@ class SolarSystem {
     this.earth = new THREE.Mesh(this.earth_geometry, this.earth_material);
     this.earth.position.set(100, 0, 0);
     this.earth_state = {
-      dist_to_sun: 100,
-      position: new THREE.Vector3(100, 0, 0),
-      velocity: new THREE.Vector3(0, 0, -20),
-      acceleration: new THREE.Vector3(0, 0, 0),
+      dist_to_sun: EARTH0.radial_position / DISTANCE_SCALE,
+      position: new THREE.Vector3(EARTH0.radial_position / DISTANCE_SCALE, 0, 0),
       angular_position: 0,
-      angular_velocity: 0.05, // about y axis
-      angular_acceleration: 0,
-      cartesian_force: new THREE.Vector3(0, 0, 0),
-      polar_force: new THREE.Vector3(0,0,0)
+      angular_velocity: EARTH0.system_omega, // about y axis
     };
 
 
@@ -59,26 +65,31 @@ class SolarSystem {
     this.scene = this.createScene();
     this.camera = this.createCamera();
     this.spotLight = this.createSpotLight();
-    this.light = this.createLight();
+    this.light = this.createAmbientLight();
+    this.directionalLight = this.createDirectionalLight();
     
 
      // additional setups
     this.setUpControls();
-    this.axes = new ThreeAxes(this.node, this.camera);
+    this.axes = new ThreeAxes(document.getElementById("container"), this.camera);
 
+    // now add everything to the scene
     this.scene.add(this.sun);
     this.scene.add(this.earth);
+    this.createStars();
+
+    this.add_event_listeners();
 
     console.log(this);
     this.run();
-
   }
+
 
   createRenderer() {
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(this.nodeWidth, this.nodeHeight);
-    renderer.setClearColor(COLOR_CODES.scene_color, 0);
+    renderer.setClearColor(COLORS.black, 0);
     this.node.appendChild(renderer.domElement);
     return renderer;
   }
@@ -90,8 +101,8 @@ class SolarSystem {
 
 
   createCamera() {
-    const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 10000);
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SCENE_DEFAULTS.scale_length);
+    const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 1000000);
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 2 / PLANET_SCALE);
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     camera.lookAt(this.scene.position);
     camera.visible = true;
@@ -103,9 +114,10 @@ class SolarSystem {
 
   createSpotLight() {
     //add in spotlight to track with camera
-    const spotLight = new THREE.SpotLight(COLOR_CODES.spotlight, 1);
+    const spotLight = new THREE.SpotLight(COLOR_CODES.spotlight, 0.2);
     spotLight.up = this.camera.up;
-    spotLight.position.set(400, 400, 400);
+    const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 2 / PLANET_SCALE);
+    spotLight.position.set(pos.x, pos.y, pos.z);
     spotLight.castShadow = true;
     spotLight.angle = Math.PI / 12;
     // spotLight.visible = false;
@@ -113,10 +125,57 @@ class SolarSystem {
     return spotLight;
   }
 
-  createLight() {
-    const light = new THREE.AmbientLight(COLORS.soft_white, 0.2);
+  createDirectionalLight() {
+    const dirLight = new THREE.DirectionalLight( 0xffffff );
+    dirLight.position.set( -1, 0, 1 ).normalize();
+    this.scene.add( dirLight );
+    return dirLight;
+  }
+
+  createAmbientLight() {
+    const light = new THREE.AmbientLight(COLORS.soft_white, 0.5);
     this.scene.add(light);
     return light;
+  }
+
+  createStars() {
+    var radius = 50;
+    var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
+    for ( i = 0; i < 250; i ++ ) {
+      var vertex = new THREE.Vector3();
+      vertex.x = Math.random() * 2 - 1;
+      vertex.y = Math.random() * 2 - 1;
+      vertex.z = Math.random() * 2 - 1;
+      vertex.multiplyScalar( r );
+      starsGeometry[ 0 ].vertices.push( vertex );
+    }
+    for ( i = 0; i < 1500; i ++ ) {
+      var vertex = new THREE.Vector3();
+      vertex.x = Math.random() * 2 - 1;
+      vertex.y = Math.random() * 2 - 1;
+      vertex.z = Math.random() * 2 - 1;
+      vertex.multiplyScalar( r );
+      starsGeometry[ 1 ].vertices.push( vertex );
+    }
+    var stars;
+    var starsMaterials = [
+      new THREE.PointsMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
+      new THREE.PointsMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
+      new THREE.PointsMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
+      new THREE.PointsMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
+      new THREE.PointsMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
+      new THREE.PointsMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
+    ];
+    for ( i = 10; i < 30; i ++ ) {
+      stars = new THREE.Points( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
+      stars.rotation.x = Math.random() * 6;
+      stars.rotation.y = Math.random() * 6;
+      stars.rotation.z = Math.random() * 6;
+      stars.scale.setScalar( i * 10 );
+      stars.matrixAutoUpdate = false;
+      stars.updateMatrix();
+      this.scene.add(stars);
+    }
   }
 
   setUpControls() {
@@ -149,7 +208,7 @@ class SolarSystem {
       this.camera.position.y,
       this.camera.position.z
     );
-    this.spotLight.angle = Math.atan(SCENE_DEFAULTS.scale_length / sc);
+    this.spotLight.angle = Math.atan(sc / sc);
     this.spotLight.target.position.set(this.scene.position);
   }
 
@@ -168,9 +227,31 @@ class SolarSystem {
 
   updatePositions() {
     // for now x is just rotating in x-z plane, can be resolved into a polar coordinate system
-    this.earth_state.angular_position += this.earth_state.angular_velocity;
+    this.earth_state.angular_position += this.earth_state.angular_velocity * this.deltaT;
     this.earth.position.setX(this.earth_state.dist_to_sun * Math.cos(this.earth_state.angular_position));
     this.earth.position.setZ(this.earth_state.dist_to_sun * - Math.sin(this.earth_state.angular_position));
+  }
+
+  add_event_listeners() {
+    this.onWindowResize = this.onWindowResize.bind(this);
+    window.addEventListener('resize', this.onWindowResize, false);
+  }
+
+  onWindowResize() {
+    this.node.width = window.innerWidth;
+    this.node.height = window.innerHeight;
+    this.nodeWidth = window.innerWidth;
+    this.nodeHeight = window.innerHeight;
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(this.nodeWidth, this.nodeHeight);
+    this.axes.renderer.setSize(this.nodeWidth / SCENE_DEFAULTS.axes_shrink_factor, this.nodeHeight /
+     SCENE_DEFAULTS.axes_shrink_factor);
+
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize( window.innerWidth, window.innerHeight );
+
   }
 
   run() {
@@ -188,7 +269,7 @@ class SolarSystem {
 
   render() {
     this.renderer.render(this.scene, this.camera);
-    // this.axes.renderer.render(this.axes.scene, this.axes.camera);
+    this.axes.renderer.render(this.axes.scene, this.axes.camera);
   }
 }
 

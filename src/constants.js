@@ -1,18 +1,32 @@
 // this will house the constants we will use for the simulation
 
+const SUN_SCALE = Math.pow(10, 7);
+const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
+const DISTANCE_SCALE = 1.496 * Math.pow(10, 11) / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
+
 const EARTH0 = {
 	mass: 5.972 * Math.pow(10, 24),
 	radius: 6.371 * Math.pow(10, 6),
-	position: new THREE.Vector3(1.496 * Math.pow(10, 11), 0, 0),  // resolved all in x direction
-	omega: 1.990986 * Math.pow(10, -7),  // angular velocity in rad/s around sun
-	self_rot: 7.2921159 * Math.pow(10, -5)
+	local_axis: new THREE.Vector3(0, 1, 0),
+	local_theta: 0,
+	local_omega: 7.2921159 * Math.pow(10, -5),
+	local_alpha: 0,
+	system_axis: new THREE.Vector3(0, 1, 0),
+	system_theta: 0,
+	system_omega: 1.990986 * Math.pow(10, -7),  // angular velocity in rad/s around sun
+	system_alpha: 0,  // will be calculated before being updated
+	radial_position: 1.496 * Math.pow(10, 11),
+	radial_velocity: 0,  // will be calculated before execution
+	radial_acceleration: 0  // will be calculated before execution
 };
 
 const SUN0 = {
 	mass: 1.98855 * Math.pow(10, 30),
 	radius: 695.7 * Math.pow(10, 6),
 	position: new THREE.Vector3(0, 0, 0),
-	self_rot: 2.9721 * Math.pow(10, -6)
+	local_axis: new THREE.Vector3(0, 1, 0),
+	local_theta: 0,
+	local_omega: 2.9721 * Math.pow(10, -6)
 };
 
 const G = 6.67408 * Math.pow(10, -11);
