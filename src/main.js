@@ -16,13 +16,14 @@ class SolarSystem {
     this.nodeHeight = window.innerHeight;
 
     // bodies
+    this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0));
     
-
     // number of calculations per second
-    this.numberOfCalculationsPerFrame = 1;
+    this.numberOfCalculationsPerFrame = 500;
     // The length of the time increment, in seconds.
-    this.deltaT = 3600 * 24 / this.numberOfCalculationsPerFrame;
+    this.deltaT = 3600 * 24 / 1000;
 
+    // create the sun
     this.sun_geometry = new THREE.SphereGeometry(SUN0.radius / SUN_SCALE, 25, 25);
     this.sun_material = new THREE.MeshPhysicalMaterial( {
       color: MATERIAL_PROPERTIES.color, 
@@ -32,25 +33,6 @@ class SolarSystem {
       metalness: MATERIAL_PROPERTIES.metalness
     });
     this.sun = new THREE.Mesh(this.sun_geometry, this.sun_material);
-
-
-    // old way with the earth
-    this.earth_geometry = new THREE.SphereGeometry(EARTH0.radius / PLANET_SCALE, 25, 25);
-    this.earth_material = new THREE.MeshPhysicalMaterial( {
-      color: COLORS.blue, 
-      transparent: false, 
-      opacity: MATERIAL_PROPERTIES.opacity, 
-      reflectivity: MATERIAL_PROPERTIES.reflectivity, 
-      metalness: MATERIAL_PROPERTIES.metalness
-    });
-    this.earth = new THREE.Mesh(this.earth_geometry, this.earth_material);
-    this.earth.position.set(100, 0, 0);
-    this.earth_state = {
-      dist_to_sun: EARTH0.radial_position / DISTANCE_SCALE,
-      position: new THREE.Vector3(EARTH0.radial_position / DISTANCE_SCALE, 0, 0),
-      angular_position: 0,
-      angular_velocity: EARTH0.system_omega, // about y axis
-    };
 
 
     // ray casting
@@ -75,7 +57,7 @@ class SolarSystem {
 
     // now add everything to the scene
     this.scene.add(this.sun);
-    this.scene.add(this.earth);
+    this.scene.add(this.earth.body);
     this.createStars();
 
     this.add_event_listeners();
@@ -212,24 +194,8 @@ class SolarSystem {
     this.spotLight.target.position.set(this.scene.position);
   }
 
-  updateForces() {
-    // do gravity stuff here
-
-  }
-
-  updateAccelerations() {
-
-  }
-
-  updateVelocities() {
-
-  }
-
-  updatePositions() {
-    // for now x is just rotating in x-z plane, can be resolved into a polar coordinate system
-    this.earth_state.angular_position += this.earth_state.angular_velocity * this.deltaT;
-    this.earth.position.setX(this.earth_state.dist_to_sun * Math.cos(this.earth_state.angular_position));
-    this.earth.position.setZ(this.earth_state.dist_to_sun * - Math.sin(this.earth_state.angular_position));
+  updatePlanets() {
+    this.earth.update_planet(this.deltaT, this.numberOfCalculationsPerFrame);
   }
 
   add_event_listeners() {
@@ -264,7 +230,7 @@ class SolarSystem {
     this.updateSpotlight();
     this.updateAxCam();
     this.updateControls();
-    this.updatePositions();
+    this.updatePlanets();
   }
 
   render() {
