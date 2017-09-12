@@ -16,10 +16,10 @@ class SolarSystem {
     this.nodeHeight = window.innerHeight;
 
     // bodies
-    // this.stars = stars;
+    
 
     // number of calculations per second
-    this.numberOfCalculationsPerFrame = 1000;
+    this.numberOfCalculationsPerFrame = 1;
     // The length of the time increment, in seconds.
     this.deltaT = 3600 * 24 / this.numberOfCalculationsPerFrame;
 
@@ -139,7 +139,7 @@ class SolarSystem {
   }
 
   createStars() {
-    var radius = 50;
+    var radius = 500;
     var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
     for ( i = 0; i < 250; i ++ ) {
       var vertex = new THREE.Vector3();

@@ -1,7 +1,7 @@
 class OrbitalBody {
-	constructor(mass, radius, up, initial_conditions) {
-		this.mass = mass;
-		this.radius = radius;
+	constructor(initial_conditions, up) {
+		this.mass = initial_conditons.mass;
+		this.radius = initial_conditions.radius;
 		this.up = up;
 
 		// set up a structure to add the two planets and then test it out
