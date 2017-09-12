@@ -1,6 +1,8 @@
 class OrbitalBody {
 	constructor(initial_conditions, up) {
 		console.log(initial_conditions);
+		this.group = new THREE.Group();
+
 		this.mass = initial_conditions.mass;
 		this.radius = initial_conditions.radius;
 		this.up = up;
@@ -40,18 +42,23 @@ class OrbitalBody {
 	      metalness: MATERIAL_PROPERTIES.metalness
 	    });
 	    this.body = new THREE.Mesh(this.geometry, this.material);
-	    console.log(this.body);
+	    this.group.add(this.body);
+
+	    this.max_points = 500;
+	    this.points = [];
+
 	    this.resolve_cartesian();
+	    this.move_planet();	    
 	}
 
 	// not need to round to prevent the propagation of obscene errors that lead to huge chaos
 	get_radial_acceleration() {
 		return (this.radial_position * Math.pow(this.system_omega, 2) - G * 
-			SUN0.mass / Math.pow(this.radial_position, 2)).toFixed(4);
+			SUN0.mass / Math.pow(this.radial_position, 2)).toFixed(5);
 	}
 
 	get_system_alpha() {
-		return (-2 * this.radial_velocity * this.system_theta / this.radial_position).toFixed(4);
+		return (-2 * this.radial_velocity * this.system_theta / this.radial_position).toFixed(5);
 	}
 
 	get_new_value(current, dt, derivative) {
@@ -74,26 +81,41 @@ class OrbitalBody {
 
 	move_planet() {
 		this.body.position.set(this.position.x, this.position.y, this.position.z);
+		// var geometry = new THREE.Geometry();
+		// geometry.vertices.push(this.body.position.clone());
+		// var starsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
+		// var pnt = new THREE.Points(geometry, starsMaterial);
+		// this.points.push(pnt);
+		// if (this.points.length > this.max_points) {
+		// 	this.group.remove(this.points[0]);
+		// 	this.points.shift();
+		// }
+		// this.group.add(pnt);
 		// console.log(this.body.position);
 	}
+
 
 	update_planet(dt, num) {
 		// will update everything about the body if need be, including real valued shit and other stuff
 		// console.log(this.body.position);
 		for (var i = 0; i < num; i++) {
 
-
 			this.radial_acceleration = this.get_radial_acceleration();
 			this.system_alpha = this.get_system_alpha();
 
 			this.system_omega = this.get_new_value(this.system_omega, dt, this.system_alpha);
 			this.system_theta = this.get_new_value(this.system_theta, dt, this.system_omega);
+			if (this.system_theta > 2 * Math.PI) {
+				this.system_theta = 2 * Math.PI - this.system_theta;
+			}
 
 			this.radial_velocity = this.get_new_value(this.radial_velocity, dt, this.radial_acceleration);
 			this.radial_position = this.get_new_value(this.radial_position, dt, this.radial_velocity);
-			// console.log(this.body.position);
 
 		}
+		// console.log(this.radial_velocity);
+		// console.log(this.radial_acceleration);
+		// console.log(this.system_theta);
 
 		// now resolve to cartesian and update the bodies position
 		this.resolve_cartesian();
@@ -105,6 +127,6 @@ class OrbitalBody {
 		// now move the planet
 		this.move_planet();
 		// console.log(this.body.position);
-
+		
 	}
 }

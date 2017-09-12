@@ -4,6 +4,8 @@ const SUN_SCALE = Math.pow(10, 7);
 const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
 const DISTANCE_SCALE = 1.496 * Math.pow(10, 11) / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
 
+const PATH_FACTOR = 1.1;
+
 const EARTH0 = {
 	mass: 5.972 * Math.pow(10, 24),
 	radius: 6.371 * Math.pow(10, 6),

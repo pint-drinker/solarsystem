@@ -57,7 +57,7 @@ class SolarSystem {
 
     // now add everything to the scene
     this.scene.add(this.sun);
-    this.scene.add(this.earth.body);
+    this.scene.add(this.earth.group);
     this.createStars();
 
     this.add_event_listeners();
