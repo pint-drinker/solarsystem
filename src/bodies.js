@@ -1,7 +1,8 @@
 class OrbitalBody {
-	constructor(initial_conditions, up) {
+	constructor(initial_conditions, up, name) {
 		console.log(initial_conditions);
-		this.group = new THREE.Group();
+		this.name = name;
+		this.group = new THREE.Group();  // possibly for moons and shit
 
 		this.mass = initial_conditions.mass;
 		this.radius = initial_conditions.radius;
@@ -20,7 +21,9 @@ class OrbitalBody {
 		this.radial_velocity = initial_conditions.radial_velocity;
 		this.radial_acceleration = initial_conditions.radial_acceleration;
 
-		this.position = new THREE.Vector3(this.radial_position, 0, 0);
+		this.position = initial_conditions.position;
+		this.velocity = initial_conditions.velocity;
+		this.acceleration = initial_conditions.acceleration;
 
 		// houses all previous values
 		this.state = initial_conditions;
@@ -30,57 +33,82 @@ class OrbitalBody {
 		this.system_quaternion = new THREE.Quaternion();
 		this.system_quaternion.setFromUnitVectors( this.up, this.system_axis);
 
+		// for adjutng the spin nicely, need to figure this out later
+		this.local_quaternion = new THREE.Quaternion();
+		this.local_quaternion.setFromUnitVectors( this.up, this.local_axis);
 
-		// create the actual body and set all of its positions
-		// also need to change for their tilt
-		this.geometry = new THREE.SphereGeometry(this.radius / PLANET_SCALE, 25, 25);
-    	this.material = new THREE.MeshPhysicalMaterial( {
-	      color: COLORS.blue, 
-	      transparent: false, 
-	      opacity: MATERIAL_PROPERTIES.opacity, 
-	      reflectivity: MATERIAL_PROPERTIES.reflectivity, 
-	      metalness: MATERIAL_PROPERTIES.metalness
-	    });
-	    this.body = new THREE.Mesh(this.geometry, this.material);
+		// create the actual body
+	    this.body = this.create(this.name);
 	    this.group.add(this.body);
 
 	    this.max_points = 500;
 	    this.points = [];
 
-	    this.resolve_cartesian();
-	    this.move_planet();	    
+	    this.move_body();	    
 	}
 
-	// not need to round to prevent the propagation of obscene errors that lead to huge chaos
-	get_radial_acceleration() {
-		return (this.radial_position * Math.pow(this.system_omega, 2) - G * 
-			SUN0.mass / Math.pow(this.radial_position, 2)).toFixed(5);
+	create(name) {
+		if (name == 'Earth') {
+			var geometry	= new THREE.SphereGeometry(EARTH0.radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map		: THREE.ImageUtils.loadTexture('images/earthmap1k.jpg'),
+				bumpMap		: THREE.ImageUtils.loadTexture('images/earthbump1k.jpg'),
+				bumpScale	: 0.05,
+				specularMap	: THREE.ImageUtils.loadTexture('images/earthspec1k.jpg'),
+				specular	: new THREE.Color('grey'),
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+		} else if (name == 'Sun') {
+			var geometry	= new THREE.SphereGeometry(SUN0.radius / SUN_SCALE, 32, 32)
+			var texture	= THREE.ImageUtils.loadTexture('images/sunmap.jpg')
+			var material	= new THREE.MeshPhongMaterial({
+				map	: texture,
+				bumpMap	: texture,
+				bumpScale: 0.05,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+		} else if (name == 'Mars') {
+			var geometry	= new THREE.SphereGeometry(MARS0.radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/marsmap1k.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/marsbump1k.jpg'),
+				bumpScale: 0.05,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		}
 	}
 
-	get_system_alpha() {
-		return (-2 * this.radial_velocity * this.system_theta / this.radial_position).toFixed(5);
+	// // not need to round to prevent the propagation of obscene errors that lead to huge chaos
+	// get_radial_acceleration() {
+	// 	return (this.radial_position * Math.pow(this.system_omega, 2) - G * 
+	// 		SUN0.mass / Math.pow(this.radial_position, 2)).toFixed(5);
+	// }
+
+	// get_system_alpha() {
+	// 	return (-2 * this.radial_velocity * this.system_theta / this.radial_position).toFixed(5);
+	// }
+
+	// get_new_value(current, dt, derivative) {
+	// 	return current + dt * derivative;
+	// }
+
+	// call this after all the bits of acceleration have been added from each orbital body
+	update_kinematics(dt) {
+		// update 
+		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
+		this.position.add(this.velocity.clone().multiplyScalar(dt));
+		// need to resolve local spinning based on local axis, need to make that nice
+		this.local_theta += this.local_omega * dt;
 	}
 
-	get_new_value(current, dt, derivative) {
-		return current + dt * derivative;
-	}
-
-	resolve_cartesian() {
-		// this will be with respect to the system_axis input
-		this.position = new THREE.Vector3(this.radial_position * Math.cos(this.system_theta) / DISTANCE_SCALE, 0, 
-			this.radial_position * -Math.sin(this.system_theta) / DISTANCE_SCALE);
-
-		// now rotate according to the axis and standard y up, 
-		// from https://stackoverflow.com/questions/25199173/how-to-find-rotation-matrix-between-two-vectors-in-three-js
-		// need to figure this out here
-		// this.body.quaternion.setFromUnitVectors(this.up, this.system_axis);
-		// console.log(this.position);
-		// console.log(this.position);
-
-	}
-
-	move_planet() {
-		this.body.position.set(this.position.x, this.position.y, this.position.z);
+	move_body() {
+		this.body.position.set(this.position.x / DISTANCE_SCALE, this.position.y / DISTANCE_SCALE,
+		 this.position.z / DISTANCE_SCALE);
+		var rot = this.local_axis.clone().multiplyScalar(this.local_theta);
+		this.body.rotation.set(rot.x, rot.y, rot.z);
 		// var geometry = new THREE.Geometry();
 		// geometry.vertices.push(this.body.position.clone());
 		// var starsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
@@ -95,38 +123,4 @@ class OrbitalBody {
 	}
 
 
-	update_planet(dt, num) {
-		// will update everything about the body if need be, including real valued shit and other stuff
-		// console.log(this.body.position);
-		for (var i = 0; i < num; i++) {
-
-			this.radial_acceleration = this.get_radial_acceleration();
-			this.system_alpha = this.get_system_alpha();
-
-			this.system_omega = this.get_new_value(this.system_omega, dt, this.system_alpha);
-			this.system_theta = this.get_new_value(this.system_theta, dt, this.system_omega);
-			if (this.system_theta > 2 * Math.PI) {
-				this.system_theta = 2 * Math.PI - this.system_theta;
-			}
-
-			this.radial_velocity = this.get_new_value(this.radial_velocity, dt, this.radial_acceleration);
-			this.radial_position = this.get_new_value(this.radial_position, dt, this.radial_velocity);
-
-		}
-		// console.log(this.radial_velocity);
-		// console.log(this.radial_acceleration);
-		// console.log(this.system_theta);
-
-		// now resolve to cartesian and update the bodies position
-		this.resolve_cartesian();
-		// console.log(this.body.position);
-		// console.log('end');
-
-		// add in local axis stuff as well
-
-		// now move the planet
-		this.move_planet();
-		// console.log(this.body.position);
-		
-	}
 }

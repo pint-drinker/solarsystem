@@ -16,24 +16,19 @@ class SolarSystem {
     this.nodeHeight = window.innerHeight;
 
     // bodies
-    this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0));
+    this.bodies = [];
+    this.sun = new OrbitalBody(SUN0, new THREE.Vector3(0, 1, 0), 'Sun');
+    this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0), 'Earth');
+    this.mars = new OrbitalBody(MARS0, new THREE.Vector3(0, 1, 0), 'Mars');
+    this.bodies.push(this.sun);
+    this.bodies.push(this.earth);
+    this.bodies.push(this.mars);
     
     // number of calculations per second
     this.numberOfCalculationsPerFrame = 500;
     // The length of the time increment, in seconds.
-    this.deltaT = 3600 * 24 / 1000;
-
-    // create the sun
-    this.sun_geometry = new THREE.SphereGeometry(SUN0.radius / SUN_SCALE, 25, 25);
-    this.sun_material = new THREE.MeshPhysicalMaterial( {
-      color: MATERIAL_PROPERTIES.color, 
-      transparent: false, 
-      opacity: MATERIAL_PROPERTIES.opacity, 
-      reflectivity: MATERIAL_PROPERTIES.reflectivity, 
-      metalness: MATERIAL_PROPERTIES.metalness
-    });
-    this.sun = new THREE.Mesh(this.sun_geometry, this.sun_material);
-
+    this.deltaT = 3600 * 24 / 3000;
+    // this ends up being 12 hours per frame
 
     // ray casting
     this.mouse = {x: 0, y: 0};
@@ -56,8 +51,9 @@ class SolarSystem {
     this.axes = new ThreeAxes(document.getElementById("container"), this.camera);
 
     // now add everything to the scene
-    this.scene.add(this.sun);
-    this.scene.add(this.earth.group);
+    for (var i in this.bodies) {
+      this.scene.add(this.bodies[i].group);
+    }
     this.createStars();
 
     this.add_event_listeners();
@@ -80,7 +76,6 @@ class SolarSystem {
     // creates the scene
     return new THREE.Scene();
   }
-
 
   createCamera() {
     const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 1000000);
@@ -194,8 +189,41 @@ class SolarSystem {
     this.spotLight.target.position.set(this.scene.position);
   }
 
-  updatePlanets() {
-    this.earth.update_planet(this.deltaT, this.numberOfCalculationsPerFrame);
+  // get the gravitational acceleration contribution from another orbital body
+  get_acceleration_contribution(body1, body2) {
+    // this is the force of body 2 acting on body 1, and will update both vector wise
+    var separation_vector = new THREE.Vector3().subVectors(body2.position, body1.position);
+    var separation = separation_vector.length();
+    separation_vector.normalize();  // this is the direction of the force from body2 on body 1, so point at body 2
+    // console.log(separation);
+    var force = separation_vector.multiplyScalar(G * body1.mass * body2.mass / (separation * separation));
+    // now add the acceleration to the body accelerations accordingly
+    body1.acceleration.add(force.clone().multiplyScalar(1 / body1.mass));
+    body2.acceleration.sub(force.clone().multiplyScalar(1 / body2.mass));  // sub because force acts in other direction
+  }
+
+  updateBodies() {
+    // perform updating with delegated number of calculations per frame
+    for (var k = 0; k < this.numberOfCalculationsPerFrame; k++) {
+      // first need to reset the accelerations of all of the bodies
+      for (var i = 0; i < this.bodies.length; i ++) {
+        this.bodies[i].acceleration.set(0, 0, 0);
+      }
+      // resolve all the accelerations
+      for (var i = 0; i < this.bodies.length; i++) {
+        for (var j = i + 1; j < this.bodies.length; j++) {
+          this.get_acceleration_contribution(this.bodies[i], this.bodies[j]);
+        }
+      }
+      // now update all the telemetry of all the bodies
+      for (var i = 0; i < this.bodies.length; i ++) {
+        this.bodies[i].update_kinematics(this.deltaT);
+      }
+    }
+    // now move the actual bodies on the screen
+    for (var i = 0; i < this.bodies.length; i ++) {
+      this.bodies[i].move_body();
+    }
   }
 
   add_event_listeners() {
@@ -230,7 +258,7 @@ class SolarSystem {
     this.updateSpotlight();
     this.updateAxCam();
     this.updateControls();
-    this.updatePlanets();
+    this.updateBodies();
   }
 
   render() {
@@ -241,3 +269,5 @@ class SolarSystem {
 
 // now call everything
 var system = new SolarSystem();
+
+
