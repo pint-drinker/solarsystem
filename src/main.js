@@ -18,11 +18,25 @@ class SolarSystem {
     // bodies
     this.bodies = [];
     this.sun = new OrbitalBody(SUN0, new THREE.Vector3(0, 1, 0), 'Sun');
+    this.mercury = new OrbitalBody(MERCURY0, new THREE.Vector3(0, 1, 0), 'Mercury');
+    this.venus = new OrbitalBody(VENUS0, new THREE.Vector3(0, 1, 0), 'Venus');
     this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0), 'Earth');
     this.mars = new OrbitalBody(MARS0, new THREE.Vector3(0, 1, 0), 'Mars');
+    this.jupiter = new OrbitalBody(JUPITER0, new THREE.Vector3(0, 1, 0), 'Jupiter');
+    this.saturn = new OrbitalBody(SATURN0, new THREE.Vector3(0, 1, 0), 'Saturn');
+    this.uranus = new OrbitalBody(URANUS0, new THREE.Vector3(0, 1, 0), 'Uranus');
+    this.neptune = new OrbitalBody(NEPTUNE0, new THREE.Vector3(0, 1, 0), 'Neptune');
+    this.pluto = new OrbitalBody(PLUTO0, new THREE.Vector3(0, 1, 0), 'Pluto');
     this.bodies.push(this.sun);
+    this.bodies.push(this.mercury);
+    this.bodies.push(this.venus);
     this.bodies.push(this.earth);
     this.bodies.push(this.mars);
+    this.bodies.push(this.jupiter);
+    this.bodies.push(this.saturn);
+    this.bodies.push(this.uranus);
+    this.bodies.push(this.neptune);
+    this.bodies.push(this.pluto);
     
     // number of calculations per second
     this.numberOfCalculationsPerFrame = 500;
@@ -116,7 +130,7 @@ class SolarSystem {
   }
 
   createStars() {
-    var radius = 500;
+    var radius = 1500;
     var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
     for ( i = 0; i < 250; i ++ ) {
       var vertex = new THREE.Vector3();

@@ -14,19 +14,11 @@ class OrbitalBody {
 		this.local_omega = initial_conditions.local_omega;
 		this.local_alpha = initial_conditions.local_alpha;
 		this.system_axis = initial_conditions.system_axis;
-		this.system_theta = initial_conditions.system_theta;
-		this.system_omega = initial_conditions.system_omega;
-		this.system_alpha = initial_conditions.system_alpha;
-		this.radial_position = initial_conditions.radial_position;
-		this.radial_velocity = initial_conditions.radial_velocity;
-		this.radial_acceleration = initial_conditions.radial_acceleration;
 
+		// cartesian updates
 		this.position = initial_conditions.position;
 		this.velocity = initial_conditions.velocity;
 		this.acceleration = initial_conditions.acceleration;
-
-		// houses all previous values
-		this.state = initial_conditions;
 
 		// for conveninetly resolving to cartesian coordinates
 		// need to check this thoroughly
@@ -60,7 +52,7 @@ class OrbitalBody {
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
 		} else if (name == 'Sun') {
-			var geometry	= new THREE.SphereGeometry(SUN0.radius / SUN_SCALE, 32, 32)
+			var geometry	= new THREE.SphereGeometry(SUN0.radius / SUN_SCALE * 1.5, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/sunmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -78,22 +70,75 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
+		} else if (name == 'Mercury') {
+			var geometry	= new THREE.SphereGeometry(MERCURY0.radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/mercurymap.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/mercurybump.jpg'),
+				bumpScale: 0.005,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+		} else if (name == 'Venus') {
+			var geometry	= new THREE.SphereGeometry(VENUS0.radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/venusmap.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/venusbump.jpg'),
+				bumpScale: 0.005,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'Jupiter') {
+			var geometry	= new THREE.SphereGeometry(JUPITER0.radius / PLANET_SCALE, 32, 32)
+			var texture	= THREE.ImageUtils.loadTexture('images/jupitermap.jpg')
+			var material	= new THREE.MeshPhongMaterial({
+				map	: texture,
+				bumpMap	: texture,
+				bumpScale: 0.02,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+		} else if (name == 'Saturn') {
+			var geometry	= new THREE.SphereGeometry(SATURN0.radius / PLANET_SCALE, 32, 32)
+			var texture	= THREE.ImageUtils.loadTexture('images/saturnmap.jpg')
+			var material	= new THREE.MeshPhongMaterial({
+				map	: texture,
+				bumpMap	: texture,
+				bumpScale: 0.05,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'Uranus') {
+			var geometry	= new THREE.SphereGeometry(URANUS0.radius / PLANET_SCALE, 32, 32)
+			var texture	= THREE.ImageUtils.loadTexture('images/uranusmap.jpg')
+			var material	= new THREE.MeshPhongMaterial({
+				map	: texture,
+				bumpMap	: texture,
+				bumpScale: 0.05,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'Neptune') {
+			var geometry	= new THREE.SphereGeometry(NEPTUNE0.radius / PLANET_SCALE, 32, 32)
+			var texture	= THREE.ImageUtils.loadTexture('images/neptunemap.jpg')
+			var material	= new THREE.MeshPhongMaterial({
+				map	: texture,
+				bumpMap	: texture,
+				bumpScale: 0.05,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'Pluto') {
+			var geometry	= new THREE.SphereGeometry(PLUTO0.radius / PLANET_SCALE * 10, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/plutomap1k.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/plutobump1k.jpg'),
+				bumpScale: 0.005,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
 		}
 	}
-
-	// // not need to round to prevent the propagation of obscene errors that lead to huge chaos
-	// get_radial_acceleration() {
-	// 	return (this.radial_position * Math.pow(this.system_omega, 2) - G * 
-	// 		SUN0.mass / Math.pow(this.radial_position, 2)).toFixed(5);
-	// }
-
-	// get_system_alpha() {
-	// 	return (-2 * this.radial_velocity * this.system_theta / this.radial_position).toFixed(5);
-	// }
-
-	// get_new_value(current, dt, derivative) {
-	// 	return current + dt * derivative;
-	// }
 
 	// call this after all the bits of acceleration have been added from each orbital body
 	update_kinematics(dt) {
@@ -109,17 +154,6 @@ class OrbitalBody {
 		 this.position.z / DISTANCE_SCALE);
 		var rot = this.local_axis.clone().multiplyScalar(this.local_theta);
 		this.body.rotation.set(rot.x, rot.y, rot.z);
-		// var geometry = new THREE.Geometry();
-		// geometry.vertices.push(this.body.position.clone());
-		// var starsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
-		// var pnt = new THREE.Points(geometry, starsMaterial);
-		// this.points.push(pnt);
-		// if (this.points.length > this.max_points) {
-		// 	this.group.remove(this.points[0]);
-		// 	this.points.shift();
-		// }
-		// this.group.add(pnt);
-		// console.log(this.body.position);
 	}
 
 
