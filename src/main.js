@@ -21,6 +21,7 @@ class SolarSystem {
     this.mercury = new OrbitalBody(MERCURY0, new THREE.Vector3(0, 1, 0), 'Mercury');
     this.venus = new OrbitalBody(VENUS0, new THREE.Vector3(0, 1, 0), 'Venus');
     this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0), 'Earth');
+    this.moon = new OrbitalBody(MOON0, new THREE.Vector3(0, 1, 0), 'EarthMoon', this.earth);
     this.mars = new OrbitalBody(MARS0, new THREE.Vector3(0, 1, 0), 'Mars');
     this.jupiter = new OrbitalBody(JUPITER0, new THREE.Vector3(0, 1, 0), 'Jupiter');
     this.saturn = new OrbitalBody(SATURN0, new THREE.Vector3(0, 1, 0), 'Saturn');
@@ -31,6 +32,7 @@ class SolarSystem {
     this.bodies.push(this.mercury);
     this.bodies.push(this.venus);
     this.bodies.push(this.earth);
+    this.bodies.push(this.moon);
     this.bodies.push(this.mars);
     this.bodies.push(this.jupiter);
     this.bodies.push(this.saturn);
@@ -92,8 +94,8 @@ class SolarSystem {
   }
 
   createCamera() {
-    const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 1000000);
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 2 / PLANET_SCALE);
+    const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 10000000);
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 0.75 / PLANET_SCALE);
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     camera.lookAt(this.scene.position);
     camera.visible = true;
@@ -130,7 +132,7 @@ class SolarSystem {
   }
 
   createStars() {
-    var radius = 1500;
+    var radius = 5000;
     var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
     for ( i = 0; i < 250; i ++ ) {
       var vertex = new THREE.Vector3();

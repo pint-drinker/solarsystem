@@ -4,6 +4,7 @@ const SUN_SCALE = Math.pow(10, 7);
 const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
 const AU = 1.496 * Math.pow(10, 11);
 const DISTANCE_SCALE = AU / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
+const MOON_FAC = 10;
 
 const G = 6.67408 * Math.pow(10, -11);
 
@@ -73,6 +74,20 @@ const EARTH0 = {
 	velocity: new THREE.Vector3(0, 0, -29785.151),  // will need to eventually be auto adjusted based on axis stuff
 	// add this in leter
 	acceleration: new THREE.Vector3(0, 0, 0)  // will be calsulated before enacting
+};
+
+const MOON0 = {
+	mass: 7.35 * Math.pow(10, 22),
+	radius: 1737500,
+	local_axis: new THREE.Vector3(0, 1, 0),  // axis that the planet rotates on
+	local_theta: 0,  // angle value of local spin
+	local_omega: 7.2921159 * Math.pow(10, -5) / 27,  // day cycle speed
+	local_alpha: 0,  // acceleration of planet day cycle
+	system_axis: new THREE.Vector3(0, 1, 0),  // orbital plane normal
+
+	position: new THREE.Vector3(1.496 * Math.pow(10, 11) + 384400000, 0, 0),  // relative to earths position
+	velocity: new THREE.Vector3(0, 0, -29785.151 + -1023.969), // relative to earth
+	acceleration: new THREE.Vector3(0, 0, 0)
 };
 
 const MARS0 = {

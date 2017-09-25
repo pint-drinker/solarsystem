@@ -1,6 +1,5 @@
 class OrbitalBody {
-	constructor(initial_conditions, up, name) {
-		console.log(initial_conditions);
+	constructor(initial_conditions, up, name, host) {
 		this.name = name;
 		this.group = new THREE.Group();  // possibly for moons and shit
 
@@ -29,13 +28,16 @@ class OrbitalBody {
 		this.local_quaternion = new THREE.Quaternion();
 		this.local_quaternion.setFromUnitVectors( this.up, this.local_axis);
 
-		// create the actual body
+		// create the actual body and any moons
 	    this.body = this.create(this.name);
 	    this.group.add(this.body);
 
 	    this.max_points = 500;
 	    this.points = [];
 
+	    this.host = host;
+
+	    // only initially move it isnt labeled a moon, moons will be moved relative to their hosts
 	    this.move_body();	    
 	}
 
@@ -137,6 +139,15 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
+		} else if (name == 'EarthMoon') {
+			var geometry	= new THREE.SphereGeometry(MOON0.radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/moonmap1k.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/moonbump1k.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
 		}
 	}
 
@@ -150,8 +161,20 @@ class OrbitalBody {
 	}
 
 	move_body() {
-		this.body.position.set(this.position.x / DISTANCE_SCALE, this.position.y / DISTANCE_SCALE,
-		 this.position.z / DISTANCE_SCALE);
+		if (!this.host) {
+			var x_comp = this.position.x / DISTANCE_SCALE;
+			var y_comp = this.position.y / DISTANCE_SCALE;
+			var z_comp = this.position.z / DISTANCE_SCALE;
+			this.body.position.set(x_comp, y_comp, z_comp);
+		} else {
+			var x_comp = this.host.position.x / DISTANCE_SCALE;
+			var y_comp = this.host.position.y / DISTANCE_SCALE;
+			var z_comp = this.host.position.z / DISTANCE_SCALE;
+			var sep_vec = new THREE.Vector3().subVectors(this.host.position.clone(), this.position.clone());
+			this.body.position.set(x_comp + sep_vec.x / DISTANCE_SCALE * MOON_FAC, 
+				y_comp + sep_vec.y / DISTANCE_SCALE * MOON_FAC, 
+				z_comp + sep_vec.z / DISTANCE_SCALE * MOON_FAC);
+		}
 		var rot = this.local_axis.clone().multiplyScalar(this.local_theta);
 		this.body.rotation.set(rot.x, rot.y, rot.z);
 	}
