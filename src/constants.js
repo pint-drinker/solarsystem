@@ -5,6 +5,8 @@ const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a facto
 const AU = 1.496 * Math.pow(10, 11);
 const DISTANCE_SCALE = AU / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
 const MOON_FAC = 10;
+const FRAMES_TO_ROTATE = 60;
+const DEFAULT_FRAMES = 500;
 
 const G = 6.67408 * Math.pow(10, -11);
 

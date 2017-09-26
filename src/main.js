@@ -41,9 +41,9 @@ class SolarSystem {
     this.bodies.push(this.pluto);
     
     // number of calculations per second
-    this.numberOfCalculationsPerFrame = 500;
+    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
     // The length of the time increment, in seconds.
-    this.deltaT = 3600 * 24 / 3000;
+    this.deltaT = 3600 * 24 / 3000; // 28.8 seconds
     // this ends up being 12 hours per frame
 
     // ray casting
@@ -60,6 +60,9 @@ class SolarSystem {
     this.spotLight = this.createSpotLight();
     this.light = this.createAmbientLight();
     this.directionalLight = this.createDirectionalLight();
+
+    // for planet tracking
+    this.current_target = undefined;
     
 
      // additional setups
@@ -190,6 +193,23 @@ class SolarSystem {
     this.axes.camera.lookAt(this.axes.scene.position);
   }
 
+  updateCamera() {
+    if (!this.current_target) {
+      return;
+    }
+    
+    var location = this.current_target.body.position.clone();
+    var dir = this.current_target.body.position.clone().normalize();
+    if (this.current_target.name == 'Pluto') {
+      location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
+      this.camera.position.set(location.x, location.y + this.current_target.radius * 20 / PLANET_SCALE, location.z);
+    } else {
+      location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
+      this.camera.position.set(location.x, location.y + this.current_target.radius * 2 / PLANET_SCALE, location.z);
+    }
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+  }
+
   updateControls() {
     this.trackball.update();
   }
@@ -242,9 +262,131 @@ class SolarSystem {
     }
   }
 
+  toEarthView() {
+    console.log('want earth?');
+    this.current_target = this.earth;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toMoonView() {
+    console.log('want moon?');
+    this.trackball.enabled = false;
+    this.current_target = this.moon;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toSunView() {
+    console.log('want sun?');
+    this.trackball.enabled = true;
+    this.current_target = undefined;
+    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 0.75 / PLANET_SCALE);
+    this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    this.camera.lookAt(this.scene.position);
+  }
+
+  toEarthView() {
+    console.log('want earth?');
+    this.current_target = this.earth;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toMercuryView() {
+    console.log('want mercury?');
+    this.current_target = this.mercury;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE) / 15;
+  }
+
+  toVenusView() {
+    console.log('want venus?');
+    this.current_target = this.venus;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE) / 10;
+  }
+
+  toMarsView() {
+    console.log('want mars?');
+    this.current_target = this.mars;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toJupiterView() {
+    console.log('want jupiter?');
+    this.current_target = this.jupiter;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toSaturnView() {
+    console.log('want saturn?');
+    this.current_target = this.saturn;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toNeptuneView() {
+    console.log('want neptune?');
+    this.current_target = this.neptune;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toPlutoView() {
+    console.log('want pluto?');
+    this.current_target = this.pluto;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+    console.log(this.pluto.body.position);
+  }
+
   add_event_listeners() {
     this.onWindowResize = this.onWindowResize.bind(this);
     window.addEventListener('resize', this.onWindowResize, false);
+
+    this.toEarthView = this.toEarthView.bind(this);
+    document.getElementById('earth_view').onclick = this.toEarthView;
+
+    this.toMoonView = this.toMoonView.bind(this);
+    document.getElementById('moon_view').onclick = this.toMoonView;
+
+    // also the rest view
+    this.toSunView = this.toSunView.bind(this);
+    document.getElementById('sun_view').onclick = this.toSunView;
+
+    this.toMercuryView = this.toMercuryView.bind(this);
+    document.getElementById('mercury_view').onclick = this.toMercuryView;
+
+    this.toVenusView = this.toVenusView.bind(this);
+    document.getElementById('venus_view').onclick = this.toVenusView;
+
+    this.toMarsView = this.toMarsView.bind(this);
+    document.getElementById('mars_view').onclick = this.toMarsView;
+
+    this.toJupiterView = this.toJupiterView.bind(this);
+    document.getElementById('jupiter_view').onclick = this.toJupiterView;
+
+    this.toSaturnView = this.toSaturnView.bind(this);
+    document.getElementById('saturn_view').onclick = this.toSaturnView;
+
+    this.toNeptuneView = this.toNeptuneView.bind(this);
+    document.getElementById('neptune_view').onclick = this.toNeptuneView;
+
+    this.toPlutoView = this.toPlutoView.bind(this);
+    document.getElementById('pluto_view').onclick = this.toPlutoView;
   }
 
   onWindowResize() {
@@ -271,6 +413,7 @@ class SolarSystem {
   animate() {
     requestAnimationFrame(this.animate.bind(this));
     this.render();
+    this.updateCamera();
     this.updateSpotlight();
     this.updateAxCam();
     this.updateControls();
