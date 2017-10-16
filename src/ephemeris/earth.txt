@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / PORT_LOGIN Sun Oct 15 19:41:40 2017 Pasadena, USA    / Horizons    
+Ephemeris / PORT_LOGIN Mon Oct 16 08:06:17 2017 Pasadena, USA    / Horizons    
 *******************************************************************************
 Target body name: Earth (399)                     {source: DE431mx}
 Center body name: Sun (10)                        {source: DE431mx}

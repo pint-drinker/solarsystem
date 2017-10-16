@@ -129,12 +129,12 @@ class PlanetConstants:
     saturn['obliquity'] = 26.73 * math.pi / 180
     planet_dict['saturn'] = saturn
 
-    # neptune = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/neptune.txt')
-    # neptune['radius'] = 6051800
-    # neptune['mass'] = 4.8685 * pow(10, 23)
-    # neptune['omega'] = 2 * math.pi / 116.749 / DAY
-    # neptune['obliquity'] = 177.3 * math.pi / 180
-    # planet_dict['neptune'] = neptune
+    neptune = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/neptune.txt')
+    neptune['radius'] = 24766000
+    neptune['mass'] = 102.41 * pow(10, 24)
+    neptune['omega'] = 1.083 * pow(10, -4)
+    neptune['obliquity'] = 29.56 * math.pi / 180
+    planet_dict['neptune'] = neptune
 
     pluto = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/pluto.txt')
     pluto['radius'] = 1195000

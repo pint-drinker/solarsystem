@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / PORT_LOGIN Sun Oct 15 19:41:49 2017 Pasadena, USA    / Horizons    
+Ephemeris / PORT_LOGIN Mon Oct 16 08:06:27 2017 Pasadena, USA    / Horizons    
 *******************************************************************************
 Target body name: Pluto (999)                     {source: plu055l_merged}
 Center body name: Sun (10)                        {source: plu055l_merged}

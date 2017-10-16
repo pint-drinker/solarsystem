@@ -6,7 +6,15 @@ getNodeComputedProperty = (node, prop) => {
 
 // do the json loader here and pass it to the solar system, and make planets by name based on the key values
 // and have it all auto populate, gonna be a relatively involved work aorund for everything
-
+var data;
+var loader = new THREE.JSONLoader();
+loader.load(
+  'parse.js'
+  function (obj) {
+    console.log(obj);
+    data = obj;
+  }
+);
 
 
 class SolarSystem {
