@@ -64,7 +64,6 @@ class SolarSystem {
     // for planet tracking
     this.current_target = undefined;
     
-
      // additional setups
     this.setUpControls();
     this.axes = new ThreeAxes(document.getElementById("container"), this.camera);
@@ -122,7 +121,7 @@ class SolarSystem {
   }
 
   createDirectionalLight() {
-    const dirLight = new THREE.DirectionalLight( 0xffffff );
+    const dirLight = new THREE.DirectionalLight( 0xffffff , 0.8);
     dirLight.position.set( -1, 0, 1 ).normalize();
     this.scene.add( dirLight );
     return dirLight;
@@ -288,14 +287,6 @@ class SolarSystem {
     this.camera.lookAt(this.scene.position);
   }
 
-  toEarthView() {
-    console.log('want earth?');
-    this.current_target = this.earth;
-    this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
-     FRAMES_TO_ROTATE);
-  }
-
   toMercuryView() {
     console.log('want mercury?');
     this.current_target = this.mercury;
@@ -331,6 +322,14 @@ class SolarSystem {
   toSaturnView() {
     console.log('want saturn?');
     this.current_target = this.saturn;
+    this.trackball.enabled = false;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toUranusView() {
+    console.log('want saturn?');
+    this.current_target = this.uranus;
     this.trackball.enabled = false;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
      FRAMES_TO_ROTATE);
@@ -382,6 +381,9 @@ class SolarSystem {
     this.toSaturnView = this.toSaturnView.bind(this);
     document.getElementById('saturn_view').onclick = this.toSaturnView;
 
+    this.toUranusView = this.toUranusView.bind(this);
+    document.getElementById('uranus_view').onclick = this.toUranusView;
+
     this.toNeptuneView = this.toNeptuneView.bind(this);
     document.getElementById('neptune_view').onclick = this.toNeptuneView;
 
@@ -403,7 +405,6 @@ class SolarSystem {
     this.camera.updateProjectionMatrix();
 
     this.renderer.setSize( window.innerWidth, window.innerHeight );
-
   }
 
   run() {

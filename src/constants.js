@@ -1,5 +1,10 @@
 // this will house the constants we will use for the simulation
 
+// http://www.geo.cornell.edu/Research_Staff/goman/teaching/461/Web/lecture_3.pdf
+
+// for snapshot info on everything
+// http://maps.jpl.nasa.gov/saturn.html
+
 const SUN_SCALE = Math.pow(10, 7);
 const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
 const AU = 1.496 * Math.pow(10, 11);
@@ -60,6 +65,9 @@ const VENUS0 = {
 
 };
 
+// perihelio is on january 3rd, and planet is 23.5 egrees tilted away on December 21st from sun (solstice)
+// Earth orbital plane is assumed to be perfect, no degrees off, and then it will be 23.5 degrees tileted from its orbital plane
+// we will start the simulation at the perihelion assuming the position is purely x at this moment in time
 const EARTH0 = {
 	mass: 5.972 * Math.pow(10, 24),
 	radius: 6.371 * Math.pow(10, 6) * 0.7,
@@ -144,7 +152,7 @@ const URANUS0 = {
 	system_axis: new THREE.Vector3(0, 1, 0),  // orbital plane normal
 
 	position: new THREE.Vector3(1.496 * Math.pow(10, 11) * 19.19, 0, 0), 
-	velocity: new THREE.Vector3(0, 0, -6802.89),
+	velocity: new THREE.Vector3(0, 0, 6802.89),
 	acceleration: new THREE.Vector3(0, 0, 0)  // will be calsulated before enacting
 };
 
