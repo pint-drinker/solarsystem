@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / PORT_LOGIN Sun Oct 15 18:53:25 2017 Pasadena, USA    / Horizons    
+Ephemeris / PORT_LOGIN Sun Oct 15 19:41:37 2017 Pasadena, USA    / Horizons    
 *******************************************************************************
 Target body name: Mercury (199)                   {source: DE431mx}
 Center body name: Sun (10)                        {source: DE431mx}
