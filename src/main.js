@@ -4,18 +4,6 @@ getNodeComputedProperty = (node, prop) => {
   return window.getComputedStyle(node, null).getPropertyValue(prop);
 };
 
-// do the json loader here and pass it to the solar system, and make planets by name based on the key values
-// and have it all auto populate, gonna be a relatively involved work aorund for everything
-var data;
-var loader = new THREE.JSONLoader();
-loader.load(
-  'parse.js'
-  function (obj) {
-    console.log(obj);
-    data = obj;
-  }
-);
-
 
 class SolarSystem {
   constructor() {
@@ -26,8 +14,16 @@ class SolarSystem {
     this.nodeWidth = window.innerWidth;
     this.nodeHeight = window.innerHeight;
 
+    this.data = data;
 
+    // set the time object
+    this.date_holder = document.getElementById('date_holder');
+    this.start_date = new Date(this.data.sun.time);
+    this.current_date = new Date(this.data.sun.time);
+    this.current_time = this.data.sun.time;
+    this.date_holder.innerHTML = this.start_date.toString();
 
+    // now populate bodies into list, looking at the data keys for pointers
 
     // bodies
     this.bodies = [];
@@ -58,7 +54,7 @@ class SolarSystem {
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
     // The length of the time increment, in seconds.
     this.deltaT = 3600 * 24 / 3000; // 28.8 seconds
-    // this ends up being 12 hours per frame
+    // this ends up being 4 hours per frame
 
     // ray casting
     this.mouse = {x: 0, y: 0};
@@ -275,6 +271,12 @@ class SolarSystem {
     }
   }
 
+  updateDate() {
+    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3);
+    this.current_date = new Date(this.current_time);
+    this.date_holder.innerHTML = this.current_date.toString();
+  }
+
   toEarthView() {
     console.log('want earth?');
     this.current_target = this.earth;
@@ -433,6 +435,7 @@ class SolarSystem {
     this.updateAxCam();
     this.updateControls();
     this.updateBodies();
+    this.updateDate();
   }
 
   render() {

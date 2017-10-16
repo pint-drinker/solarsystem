@@ -2,38 +2,11 @@
 # initialize the solar system on the JS side
 import math
 import json
+from dateutil import parser
+from datetime import *
 
 AU = 149597870700  # meters
 DAY = 86400  # seconds
-
-def parse_info_earth(file_path):
-
-    # initialize dictionary
-    d = {'radius': 0, 'mass': 0, 'period': 0, 'local_omega': 0, 'obliquity': 0}
-
-    file = open(file_path, 'r')
-    lines = file.readlines()
-    for line in lines:
-        if 'Mean radius, km' in line:
-            # this line contains the radius and the mass value
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['radius'] = float(p1[3].split('+')[0]) * 1000  # because its in km
-            d['mass'] = float(p1[-1].split('+')[0]) * pow(10, 24)  # because its in 10^24 kg
-        elif 'Mean rot. rate' in line:
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['local_omega'] = float(p1[5].split('*')[0]) * pow(10, -5)  # rad/s
-        elif 'Sidereal period, hr' in line:
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['period'] = float(p1[3]) * 3600  # seconds
-        elif 'Obliquity to orbit, deg' in line:
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['obliquity'] = float(p1[4]) * math.pi / 180  # radians
-            break
-    return d
 
 
 def parse_ephemeris(file_path):
@@ -62,7 +35,16 @@ def parse_ephemeris(file_path):
             ct = 2
         if '= A.D. ' in line:
             ct = 1
-            d['time'] = float(line.split()[0])  # in epoch time
+            p1 = line.split()
+            date_string = p1[3] + ' ' + p1[4]  # grabbing the date string
+            dt = parser.parse(date_string)
+            date1 = datetime.strptime(str(dt), '%Y-%m-%d %H:%M:%S')
+            # need to get the number of milliseconds elapsed since Jan 1 1970, the beggining of UTC time
+            date_orig = datetime(1970, 1, 1)
+            difference = date1 - date_orig
+            # 5 hour offset from est to utc
+            elapsed_milliseconds = difference.total_seconds() * pow(10, 3) + 5 * 3600 * pow(10, 3)
+            d['time'] = elapsed_milliseconds
     return d
 
 
@@ -144,6 +126,7 @@ class PlanetConstants:
     planet_dict['pluto'] = pluto
 
     with open('/Users/dwensberg/Desktop/development/solarsystem/src/parse.js', 'w') as outfile:
+        outfile.write('data = ')
         json.dump(planet_dict, outfile)
 
 pc = PlanetConstants

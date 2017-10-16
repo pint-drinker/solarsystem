@@ -9,24 +9,18 @@
                 padding: 0px;
                 overflow: hidden;
             }
-            /*body {
-                background:#000;
-                color: #eee;
-                padding:0;
-                margin:0;
-                font-weight:bold;
-                overflow:hidden;
-                font-family:Monospace;
-                font-size:13px;
-                text-align:center;
-            }*/
             #container {
-                /*width: 500px;
-                height: 500px;*/
                 height: 100%;
                 width: 100%;
-                /*background: linear-gradient(to bottom, #ffffff 0%,#bfbfbf 63%,#4c4c4c 100%);*/
                 background: black;
+            }
+            #date_holder {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                height: 40px;
+                width: 200px;
+                background: gray;
             }
             button {
                 margin-top: 5px;
@@ -55,11 +49,14 @@
           <button id="neptune_view">Neptune</button>
           <button id="pluto_view">Pluto</button>
         </div>
+        <div id="date_holder">
+        </div>
         <script src="library/three.min.js"></script>
         <script src="library/trackball-controls.js"></script>
         <script src="constants.js"></script>
         <script src="three-axes.js"></script>
         <script src="bodies.js"></script>
+        <script src="parse.js"></script>
         <script src="main.js"></script>
     </body>
 </html>
