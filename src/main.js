@@ -4,6 +4,9 @@ getNodeComputedProperty = (node, prop) => {
   return window.getComputedStyle(node, null).getPropertyValue(prop);
 };
 
+// do the json loader here and pass it to the solar system, and make planets by name based on the key values
+// and have it all auto populate, gonna be a relatively involved work aorund for everything
+
 
 
 class SolarSystem {
@@ -14,6 +17,9 @@ class SolarSystem {
     this.node.height = window.innerHeight;
     this.nodeWidth = window.innerWidth;
     this.nodeHeight = window.innerHeight;
+
+
+
 
     // bodies
     this.bodies = [];

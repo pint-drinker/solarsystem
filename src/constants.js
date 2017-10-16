@@ -5,6 +5,9 @@
 // for snapshot info on everything
 // http://maps.jpl.nasa.gov/saturn.html
 
+// getting info on all the planets and shit
+// https://ssd.jpl.nasa.gov/?horizons#telnet
+
 const SUN_SCALE = Math.pow(10, 7);
 const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
 const AU = 1.496 * Math.pow(10, 11);

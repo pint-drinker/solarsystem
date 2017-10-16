@@ -3,7 +3,7 @@
  
  GEOPHYSICAL DATA (updated 2014-Mar-13):
   Mean radius (km)      =   6051.8(4+-1)  Density (g cm^-3)     =  5.204 
-  Mass (10^23 kg )      =     48.685      Flattening, f         =  
+  Mass (10^23 kg )      =     4.8685      Flattening, f         =  
   Volume (x10^10 km^3)  =     92.843      Semi-major axis       =  
   Sidereal rot. period  =   -243.0185 d   Rot. Rate (x10^5 s)   = -0.029924 
   Mean solar day        =    116.7490 d   Polar gravity ms^-2   =   

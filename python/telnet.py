@@ -22,8 +22,9 @@ mars = {'id': 499, 'local': 'mars.txt', 'remote_info': '', 'remote_eph': ''}
 jupiter = {'id': 599, 'local': 'jupiter.txt', 'remote_info': '', 'remote_eph': ''}
 saturn = {'id': 699, 'local': 'saturn.txt', 'remote_info': '', 'remote_eph': ''}
 uranus = {'id': 799, 'local': 'uranus.txt', 'remote_info': '', 'remote_eph': ''}
+neptune = {'id': 899, 'local': 'neptune.txt', 'remote_info': '', 'remote_eph': ''}
 pluto = {'id': 999, 'local': 'pluto.txt', 'remote_info': '', 'remote_eph': ''}
-bodies = [sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus, pluto]
+bodies = [sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus, neptune, pluto]
 
 # path to get us to the telnet interface to grab ephemeris
 open_path = 'telnet horizons.jpl.nasa.gov 6775'
