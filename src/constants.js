@@ -15,6 +15,8 @@ const DISTANCE_SCALE = AU / 300;  // distances are shrunk by a factor of 1 AU to
 const MOON_FAC = 10;
 const FRAMES_TO_ROTATE = 60;
 const DEFAULT_FRAMES = 500;
+const DEFAULT_dT = 3600 * 24 / 3000;
+const DEFAULT_UPDATE_TIME = 1000;  // update text every second, or 1000 milliseconds
 
 const G = 6.67408 * Math.pow(10, -11);
 

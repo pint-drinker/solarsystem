@@ -4,6 +4,45 @@ getNodeComputedProperty = (node, prop) => {
   return window.getComputedStyle(node, null).getPropertyValue(prop);
 };
 
+getTimeString = function(seconds) {
+  // determine chunk values
+  let w = Math.floor(seconds / 604800);  // weeks
+  let d = Math.floor((seconds % 604800) / 86400) ;  // days
+  let h = Math.floor((seconds % 86400) / 3600);  // hours
+  let m = Math.floor((seconds % 3600) / 60);  // minutes
+  let s = Math.floor(seconds % 60);  // seconds
+
+  // now construct the string
+  var st = '';
+  if (w) {
+    st += w.toString() + 'w ';
+  }
+  if (d) {
+    st += d.toString() + 'd ';
+  }
+  if (h) {
+    st += h.toString() + 'h ';
+  }
+  if (m) {
+    st += m.toString() + 'm ';
+  }
+  if (s) {
+    st += s.toString() + 's ';
+  }
+  return st; 
+}
+
+getDistanceString = function(meters) {
+  let ly = Math.floor(meters / (299792458 * 3600 * 24 * 365));
+  let Mkm = Math.floor((meters % (299792458 * 3600 * 24 * 365)) / 1000000000);
+  let st = '';
+  if (ly) {
+    st += ly.toString() + ' Ly ';
+  }
+  st += Mkm.toString() + ' Million km';
+  return st;
+}
+
 
 class SolarSystem {
   constructor() {
@@ -14,14 +53,47 @@ class SolarSystem {
     this.nodeWidth = window.innerWidth;
     this.nodeHeight = window.innerHeight;
 
+    // body population info
     this.data = data;
+
+    // number of calculations per second
+    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+    // The length of the time increment, in seconds.
+    this.deltaT = DEFAULT_dT;
+
+    // time and text tracking
+    this.frame_count = 0;
+    this.last_update_time = 0;
+    this.update_dt = DEFAULT_UPDATE_TIME;
 
     // set the time object
     this.date_holder = document.getElementById('date_holder');
     this.start_date = new Date(this.data.sun.time);
     this.current_date = new Date(this.data.sun.time);
     this.current_time = this.data.sun.time;
-    this.date_holder.innerHTML = this.start_date.toString();
+    this.date_label = 'Date: '
+    this.date_holder.innerHTML = this.date_label + this.start_date.toString();
+
+    // set the time info object
+    this.time_info_holder = document.getElementById('time_info_holder');
+    this.kt_label = 'Time Step(s): '
+    this.cc_label = '<br />Steps per frame: '
+    this.dt_label = '<br />Time Per Frame: ';
+    this.fr_label = '<br />FPS: ';
+    this.tf_label = '<br />Time Factor: ';
+    this.ts_label = '<br />1 sec = ';
+    this.frame_rate = 0;
+    this.time_per_frame = 0;
+    this.time_per_frame_s = '';
+    this.time_factor = 0;
+    this.time_factor_s = '';
+    this.updateTime();
+
+    // set up the persepctive update
+    this.perspective_holder = document.getElementById('perspective_info');
+    this.p_label = 'Viewer Distance from Sun:<br />'
+    this.viewer_distance = 0;
+    this.perspective_holder.innerHTML = this.p_label;
 
     // now populate bodies into list, looking at the data keys for pointers
 
@@ -50,11 +122,7 @@ class SolarSystem {
     this.bodies.push(this.neptune);
     this.bodies.push(this.pluto);
     
-    // number of calculations per second
-    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-    // The length of the time increment, in seconds.
-    this.deltaT = 3600 * 24 / 3000; // 28.8 seconds
-    // this ends up being 4 hours per frame
+    
 
     // ray casting
     this.mouse = {x: 0, y: 0};
@@ -85,6 +153,8 @@ class SolarSystem {
     this.createStars();
 
     this.add_event_listeners();
+
+    this.updatePerspective();
 
     console.log(this);
     this.run();
@@ -271,12 +341,32 @@ class SolarSystem {
     }
   }
 
+  // DOUBLE CHECK THIS IS NOT OVER COUNTING BY ONE FRAME
   updateDate() {
-    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3);
+    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3) * this.frame_count;
     this.current_date = new Date(this.current_time);
-    this.date_holder.innerHTML = this.current_date.toString();
+    this.date_holder.innerHTML = this.date_label + this.current_date.toString();
   }
 
+  updateTime() {
+    this.time_per_frame = this.numberOfCalculationsPerFrame * this.deltaT;  // in seconds, going to need to scale this later
+    this.time_per_frame_s = getTimeString(this.time_per_frame);
+    this.time_factor = Math.floor(this.time_per_frame * this.frame_rate);
+    this.time_factor_s = getTimeString(this.time_factor);
+    this.time_info_holder.innerHTML = this.kt_label + this.deltaT.toString() + this.cc_label + 
+      this.numberOfCalculationsPerFrame.toString() + this.dt_label + this.time_per_frame_s + 
+      this.fr_label + this.frame_rate.toString() + this.tf_label + this.time_factor.toString() +
+      this.ts_label + this.time_factor_s;
+  }
+
+  updatePerspective() {
+    this.viewer_distance = new THREE.Vector3().subVectors(this.camera.position.clone().multiplyScalar(DISTANCE_SCALE), 
+      this.sun.position).length();
+    this.perspective_holder.innerHTML = this.p_label + getDistanceString(this.viewer_distance);
+  }
+
+
+  // button interaction functions
   toEarthView() {
     console.log('want earth?');
     this.current_target = this.earth;
@@ -308,7 +398,7 @@ class SolarSystem {
     this.current_target = this.mercury;
     this.trackball.enabled = false;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
-     FRAMES_TO_ROTATE) / 15;
+     FRAMES_TO_ROTATE / 15);
   }
 
   toVenusView() {
@@ -316,7 +406,7 @@ class SolarSystem {
     this.current_target = this.venus;
     this.trackball.enabled = false;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
-     FRAMES_TO_ROTATE) / 10;
+     FRAMES_TO_ROTATE / 10);
   }
 
   toMarsView() {
@@ -435,7 +525,22 @@ class SolarSystem {
     this.updateAxCam();
     this.updateControls();
     this.updateBodies();
-    this.updateDate();
+    // this.updateDate();  // remove this into update if things are too slow or burning too much energy, worried it is
+
+    // time tracking
+    this.frame_count += 1;
+    let t = performance.now();
+    if (t - this.last_update_time > this.update_dt) {
+      this.frame_rate = Math.floor(this.frame_count / (t - this.last_update_time) * 1000);
+      this.last_update_time = t;
+      // update the date before resetting frame count
+      this.updateDate();
+      this.frame_count = 0;
+      this.updateTime();
+      // update the viewer distance
+      this.updatePerspective();
+
+    }
   }
 
   render() {
