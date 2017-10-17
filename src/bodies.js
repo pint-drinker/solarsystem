@@ -1,49 +1,41 @@
 class OrbitalBody {
-	constructor(initial_conditions, up, name, host) {
+	constructor(obj, name) {
 		this.name = name;
 		this.group = new THREE.Group();  // possibly for moons and shit
 
-		this.mass = initial_conditions.mass;
-		this.radius = initial_conditions.radius;
-		this.up = up;
+		this.mass = obj.mass;
+		this.radius = obj.radius;
+		this.up = new THREE.Vector3(0, 0, 1);
 
 		// set up a structure to add the two planets and then test it out
-		this.local_axis = initial_conditions.local_axis;
-		this.local_theta = initial_conditions.local_theta;
-		this.local_omega = initial_conditions.local_omega;
-		this.local_alpha = initial_conditions.local_alpha;
-		this.system_axis = initial_conditions.system_axis;
+		this.theta = 0;
+		this.omega = obj.omega;
 
 		// cartesian updates
-		this.position = initial_conditions.position;
-		this.velocity = initial_conditions.velocity;
-		this.acceleration = initial_conditions.acceleration;
+		this.position = new THREE.Vector3(obj.position[0], obj.position[1], obj.position[2]);
+		this.velocity = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2])
+		this.acceleration = new THREE.Vector3();
 
-		// for conveninetly resolving to cartesian coordinates
-		// need to check this thoroughly
-		this.system_quaternion = new THREE.Quaternion();
-		this.system_quaternion.setFromUnitVectors( this.up, this.system_axis);
-
-		// for adjutng the spin nicely, need to figure this out later
-		this.local_quaternion = new THREE.Quaternion();
-		this.local_quaternion.setFromUnitVectors( this.up, this.local_axis);
+		// axis tilt, representing a rotation about the z direction in radians
+		this.obliquity = obj.obliquity;
+		this.axis = new THREE.Vector3(0, Math.cos(this.obliquity), Math.sin(this.obliquity));
 
 		// create the actual body and any moons
-	    this.body = this.create(this.name);
+	    this.body = this.create(this.name, this.radius);
 	    this.group.add(this.body);
 
 	    this.max_points = 500;
 	    this.points = [];
 
-	    this.host = host;
+	    this.host = undefined;
 
 	    // only initially move it isnt labeled a moon, moons will be moved relative to their hosts
 	    this.move_body();	    
 	}
 
-	create(name) {
-		if (name == 'Earth') {
-			var geometry	= new THREE.SphereGeometry(EARTH0.radius / PLANET_SCALE, 32, 32)
+	create(name, radius) {
+		if (name == 'earth') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map		: THREE.ImageUtils.loadTexture('images/earthmap1k.jpg'),
 				bumpMap		: THREE.ImageUtils.loadTexture('images/earthbump1k.jpg'),
@@ -53,8 +45,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
-		} else if (name == 'Sun') {
-			var geometry	= new THREE.SphereGeometry(SUN0.radius / SUN_SCALE * 1.5, 32, 32)
+		} else if (name == 'sun') {
+			var geometry	= new THREE.SphereGeometry(radius / SUN_SCALE * 1.5, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/sunmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -63,8 +55,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
-		} else if (name == 'Mars') {
-			var geometry	= new THREE.SphereGeometry(MARS0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'mars') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map	: THREE.ImageUtils.loadTexture('images/marsmap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/marsbump1k.jpg'),
@@ -72,8 +64,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
-		} else if (name == 'Mercury') {
-			var geometry	= new THREE.SphereGeometry(MERCURY0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'mercury') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map	: THREE.ImageUtils.loadTexture('images/mercurymap.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/mercurybump.jpg'),
@@ -81,8 +73,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
-		} else if (name == 'Venus') {
-			var geometry	= new THREE.SphereGeometry(VENUS0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'venus') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map	: THREE.ImageUtils.loadTexture('images/venusmap.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/venusbump.jpg'),
@@ -90,8 +82,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
-		} else if (name == 'Jupiter') {
-			var geometry	= new THREE.SphereGeometry(JUPITER0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'jupiter') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/jupitermap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -100,8 +92,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
-		} else if (name == 'Saturn') {
-			var geometry	= new THREE.SphereGeometry(SATURN0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'saturn') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/saturnmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -110,8 +102,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
-		} else if (name == 'Uranus') {
-			var geometry	= new THREE.SphereGeometry(URANUS0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'uranus') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/uranusmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -120,8 +112,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
-		} else if (name == 'Neptune') {
-			var geometry	= new THREE.SphereGeometry(NEPTUNE0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'neptune') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var texture	= THREE.ImageUtils.loadTexture('images/neptunemap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
@@ -130,8 +122,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
-		} else if (name == 'Pluto') {
-			var geometry	= new THREE.SphereGeometry(PLUTO0.radius / PLANET_SCALE * 10, 32, 32)
+		} else if (name == 'pluto') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE * 10, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map	: THREE.ImageUtils.loadTexture('images/plutomap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/plutobump1k.jpg'),
@@ -139,8 +131,8 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
-		} else if (name == 'EarthMoon') {
-			var geometry	= new THREE.SphereGeometry(MOON0.radius / PLANET_SCALE, 32, 32)
+		} else if (name == 'moon') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
 				map	: THREE.ImageUtils.loadTexture('images/moonmap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/moonbump1k.jpg'),
@@ -157,7 +149,7 @@ class OrbitalBody {
 		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
 		this.position.add(this.velocity.clone().multiplyScalar(dt));
 		// need to resolve local spinning based on local axis, need to make that nice
-		this.local_theta += this.local_omega * dt;
+		this.theta += this.omega * dt;
 	}
 
 	move_body() {
@@ -175,8 +167,9 @@ class OrbitalBody {
 				y_comp + sep_vec.y / DISTANCE_SCALE * MOON_FAC, 
 				z_comp + sep_vec.z / DISTANCE_SCALE * MOON_FAC);
 		}
-		var rot = this.local_axis.clone().multiplyScalar(this.local_theta);
-		this.body.rotation.set(rot.x, rot.y, rot.z);
+		this.body.rotation.set(0, 0, 0); 
+		this.body.rotateX(Math.PI / 2 - this.obliquity);  // for mapping transformation, and matches seasons correctly
+		this.body.rotateY(this.theta);
 	}
 
 

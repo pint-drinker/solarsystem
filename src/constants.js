@@ -8,14 +8,14 @@
 // getting info on all the planets and shit
 // https://ssd.jpl.nasa.gov/?horizons#telnet
 
-const SUN_SCALE = Math.pow(10, 7);
+const SUN_SCALE = 1.2 * Math.pow(10, 7);
 const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a factor of a million
 const AU = 1.496 * Math.pow(10, 11);
 const DISTANCE_SCALE = AU / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
 const MOON_FAC = 10;
 const FRAMES_TO_ROTATE = 60;
 const DEFAULT_FRAMES = 500;
-const DEFAULT_dT = 3600 * 24 / 3000;
+const DEFAULT_dT = 3600 * 24 / 500;
 const DEFAULT_UPDATE_TIME = 1000;  // update text every second, or 1000 milliseconds
 
 const G = 6.67408 * Math.pow(10, -11);
@@ -104,6 +104,7 @@ const MOON0 = {
 	velocity: new THREE.Vector3(0, 0, -29785.151 + -1023.969), // relative to earth
 	acceleration: new THREE.Vector3(0, 0, 0)
 };
+
 
 const MARS0 = {
 	mass: 6.41693 * Math.pow(10, 23),

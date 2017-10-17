@@ -78,7 +78,7 @@ class PlanetConstants:
 
     earth = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/earth.txt')
     earth['radius'] = 6371010
-    earth['mass'] = 5.97219 * pow(10, 23)
+    earth['mass'] = 5.97219 * pow(10, 24)
     earth['omega'] = 7.292115 * pow(10, -5)
     earth['obliquity'] = 23.45 * math.pi / 180
     planet_dict['earth'] = earth
@@ -110,6 +110,13 @@ class PlanetConstants:
     saturn['omega'] = 1.63785 * pow(10, -4)
     saturn['obliquity'] = 26.73 * math.pi / 180
     planet_dict['saturn'] = saturn
+
+    uranus = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/uranus.txt')
+    uranus['radius'] = 25559000
+    uranus['mass'] = 86.8103 * pow(10, 24)
+    uranus['omega'] = 1.012 * pow(10, -4)
+    uranus['obliquity'] = 97.86 * math.pi / 180
+    planet_dict['uranus'] = uranus
 
     neptune = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/neptune.txt')
     neptune['radius'] = 24766000

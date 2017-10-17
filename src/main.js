@@ -1,4 +1,5 @@
 
+var ct = 0;
 
 getNodeComputedProperty = (node, prop) => {
   return window.getComputedStyle(node, null).getPropertyValue(prop);
@@ -32,6 +33,15 @@ getTimeString = function(seconds) {
   return st; 
 }
 
+isInside = function(item, array) {
+  for (var i = 0; i < array.length; i++) {
+    if (item == array[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 getDistanceString = function(meters) {
   let ly = Math.floor(meters / (299792458 * 3600 * 24 * 365));
   let Mkm = Math.floor((meters % (299792458 * 3600 * 24 * 365)) / 1000000000);
@@ -55,6 +65,7 @@ class SolarSystem {
 
     // body population info
     this.data = data;
+    console.log(data);
 
     // number of calculations per second
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
@@ -95,34 +106,15 @@ class SolarSystem {
     this.viewer_distance = 0;
     this.perspective_holder.innerHTML = this.p_label;
 
-    // now populate bodies into list, looking at the data keys for pointers
-
     // bodies
-    this.bodies = [];
-    this.sun = new OrbitalBody(SUN0, new THREE.Vector3(0, 1, 0), 'Sun');
-    this.mercury = new OrbitalBody(MERCURY0, new THREE.Vector3(0, 1, 0), 'Mercury');
-    this.venus = new OrbitalBody(VENUS0, new THREE.Vector3(0, 1, 0), 'Venus');
-    this.earth = new OrbitalBody(EARTH0, new THREE.Vector3(0, 1, 0), 'Earth');
-    this.moon = new OrbitalBody(MOON0, new THREE.Vector3(0, 1, 0), 'EarthMoon', this.earth);
-    this.mars = new OrbitalBody(MARS0, new THREE.Vector3(0, 1, 0), 'Mars');
-    this.jupiter = new OrbitalBody(JUPITER0, new THREE.Vector3(0, 1, 0), 'Jupiter');
-    this.saturn = new OrbitalBody(SATURN0, new THREE.Vector3(0, 1, 0), 'Saturn');
-    this.uranus = new OrbitalBody(URANUS0, new THREE.Vector3(0, 1, 0), 'Uranus');
-    this.neptune = new OrbitalBody(NEPTUNE0, new THREE.Vector3(0, 1, 0), 'Neptune');
-    this.pluto = new OrbitalBody(PLUTO0, new THREE.Vector3(0, 1, 0), 'Pluto');
-    this.bodies.push(this.sun);
-    this.bodies.push(this.mercury);
-    this.bodies.push(this.venus);
-    this.bodies.push(this.earth);
-    this.bodies.push(this.moon);
-    this.bodies.push(this.mars);
-    this.bodies.push(this.jupiter);
-    this.bodies.push(this.saturn);
-    this.bodies.push(this.uranus);
-    this.bodies.push(this.neptune);
-    this.bodies.push(this.pluto);
-    
-    
+    this.bodies = {};
+    for (var key in data) {
+      console.log(data[key]);
+      this.bodies[key] = new OrbitalBody(data[key], key);
+    }
+    // now add to the moon the earth as its host
+    this.bodies.moon.host = this.bodies.earth;
+
 
     // ray casting
     this.mouse = {x: 0, y: 0};
@@ -182,7 +174,7 @@ class SolarSystem {
     camera.lookAt(this.scene.position);
     camera.visible = true;
     //WE WANT Z TO BE THE UP AXIS IN GENERAL
-    // camera.up = new THREE.Vector3(0, 0, 1);
+    camera.up = new THREE.Vector3(0, 0, 1);
     this.scene.add(camera);
     return camera;
   }
@@ -202,7 +194,7 @@ class SolarSystem {
 
   createDirectionalLight() {
     const dirLight = new THREE.DirectionalLight( 0xffffff , 0.8);
-    dirLight.position.set( -1, 0, 1 ).normalize();
+    dirLight.position.set( 0, 0, 1 ).normalize();
     this.scene.add( dirLight );
     return dirLight;
   }
@@ -279,12 +271,12 @@ class SolarSystem {
     
     var location = this.current_target.body.position.clone();
     var dir = this.current_target.body.position.clone().normalize();
-    if (this.current_target.name == 'Pluto') {
+    if (this.current_target.name == 'pluto') {
       location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
-      this.camera.position.set(location.x, location.y + this.current_target.radius * 20 / PLANET_SCALE, location.z);
+      this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
     } else {
       location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
-      this.camera.position.set(location.x, location.y + this.current_target.radius * 2 / PLANET_SCALE, location.z);
+      this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
     }
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
   }
@@ -321,23 +313,29 @@ class SolarSystem {
     // perform updating with delegated number of calculations per frame
     for (var k = 0; k < this.numberOfCalculationsPerFrame; k++) {
       // first need to reset the accelerations of all of the bodies
-      for (var i = 0; i < this.bodies.length; i ++) {
-        this.bodies[i].acceleration.set(0, 0, 0);
+      for (var key in this.bodies) {
+        this.bodies[key].acceleration.set(0, 0, 0);
       }
       // resolve all the accelerations
-      for (var i = 0; i < this.bodies.length; i++) {
-        for (var j = i + 1; j < this.bodies.length; j++) {
-          this.get_acceleration_contribution(this.bodies[i], this.bodies[j]);
+      var tracking = [];
+      for (var key1 in this.bodies) {
+        tracking.push(key1);
+        ct = 0;
+        for (var key2 in this.bodies) {
+          if (isInside(key2, tracking) == false) {
+            this.get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
+          } 
         }
       }
+
       // now update all the telemetry of all the bodies
-      for (var i = 0; i < this.bodies.length; i ++) {
-        this.bodies[i].update_kinematics(this.deltaT);
+      for (var key in this.bodies) {
+        this.bodies[key].update_kinematics(this.deltaT);
       }
     }
     // now move the actual bodies on the screen
-    for (var i = 0; i < this.bodies.length; i ++) {
-      this.bodies[i].move_body();
+    for (var key in this.bodies) {
+      this.bodies[key].move_body();
     }
   }
 
@@ -361,7 +359,7 @@ class SolarSystem {
 
   updatePerspective() {
     this.viewer_distance = new THREE.Vector3().subVectors(this.camera.position.clone().multiplyScalar(DISTANCE_SCALE), 
-      this.sun.position).length();
+      this.bodies.sun.position).length();
     this.perspective_holder.innerHTML = this.p_label + getDistanceString(this.viewer_distance);
   }
 
@@ -369,17 +367,17 @@ class SolarSystem {
   // button interaction functions
   toEarthView() {
     console.log('want earth?');
-    this.current_target = this.earth;
+    this.current_target = this.bodies.earth;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toMoonView() {
     console.log('want moon?');
     this.trackball.enabled = false;
-    this.current_target = this.moon;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.local_omega / this.deltaT /
+    this.current_target = this.bodies.moon;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
@@ -395,67 +393,66 @@ class SolarSystem {
 
   toMercuryView() {
     console.log('want mercury?');
-    this.current_target = this.mercury;
+    this.current_target = this.bodies.mercury;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE / 15);
   }
 
   toVenusView() {
     console.log('want venus?');
-    this.current_target = this.venus;
+    this.current_target = this.bodies.venus;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE / 10);
   }
 
   toMarsView() {
     console.log('want mars?');
-    this.current_target = this.mars;
+    this.current_target = this.bodies.mars;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toJupiterView() {
     console.log('want jupiter?');
-    this.current_target = this.jupiter;
+    this.current_target = this.bodies.jupiter;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toSaturnView() {
     console.log('want saturn?');
-    this.current_target = this.saturn;
+    this.current_target = this.bodies.saturn;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toUranusView() {
     console.log('want saturn?');
-    this.current_target = this.uranus;
+    this.current_target = this.bodies.uranus;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toNeptuneView() {
     console.log('want neptune?');
-    this.current_target = this.neptune;
+    this.current_target = this.bodies.neptune;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toPlutoView() {
     console.log('want pluto?');
-    this.current_target = this.pluto;
+    this.current_target = this.bodies.pluto;
     this.trackball.enabled = false;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.local_omega / this.deltaT /
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
-    console.log(this.pluto.body.position);
   }
 
   add_event_listeners() {
@@ -539,7 +536,6 @@ class SolarSystem {
       this.updateTime();
       // update the viewer distance
       this.updatePerspective();
-
     }
   }
 
