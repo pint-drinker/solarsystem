@@ -18,7 +18,7 @@ class ThreeAxes {
     //create axis guide renderer, put it somewhere nice
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(this.nodeWidth / SCENE_DEFAULTS.axes_shrink_factor, this.nodeHeight / SCENE_DEFAULTS.axes_shrink_factor);
-    renderer.setClearColor(COLOR_CODES.scene_color, 0);
+    renderer.setClearColor(0x000000, 0);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.bottom = '20px';
     renderer.domElement.style.left = '20px';
@@ -38,7 +38,7 @@ class ThreeAxes {
   }
 
   createLight() {
-    const light = new THREE.AmbientLight(COLORS.soft_white, 0.8);
+    const light = new THREE.AmbientLight(0xfafafa, 0.8);
     this.scene.add(light);
     return light;
   }
@@ -49,9 +49,9 @@ class ThreeAxes {
     const origin = new THREE.Vector3(0, -l / 3, 0);
     const hl = l / 4;
     const hw = l / 5;
-    const xarr = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, l, COLOR_CODES.x, hl, hw);
-    const yarr = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, l, COLOR_CODES.y, hl, hw);
-    const zarr = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, l, COLOR_CODES.z, hl, hw);
+    const xarr = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, l, 0xFF0000, hl, hw);
+    const yarr = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, l, 0x00FF00, hl, hw);
+    const zarr = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, l, 0x0000FF, hl, hw);
 
     this.scene.add(xarr);
     this.scene.add(yarr);
@@ -72,7 +72,7 @@ class ThreeAxes {
           height: 0.3,
           bevelEnabled: false
         });
-        var mat = new THREE.MeshPhysicalMaterial({color: COLOR_CODES.x});
+        var mat = new THREE.MeshPhysicalMaterial({color: 0xFF0000});
         var m = new THREE.Mesh(geometry, mat);
         m.position.addVectors(origin, new THREE.Vector3(l + hl - l / 3, 0, 1));
         m.rotateX(-Math.PI / 2);
@@ -88,7 +88,7 @@ class ThreeAxes {
           height: 0.3,
           bevelEnabled: false
         });
-        var mat = new THREE.MeshPhysicalMaterial({color: COLOR_CODES.y});
+        var mat = new THREE.MeshPhysicalMaterial({color: 0x00FF00});
         var m = new THREE.Mesh(geometry, mat);
         m.position.addVectors(origin, new THREE.Vector3(0, l + hl - l / 3, -1));
         m.rotateX(Math.PI / 2);
@@ -105,7 +105,7 @@ class ThreeAxes {
           height: 0.3,
           bevelEnabled: false
         });
-        var mat = new THREE.MeshPhysicalMaterial({color: COLOR_CODES.z});
+        var mat = new THREE.MeshPhysicalMaterial({color: 0x0000FF});
         var m = new THREE.Mesh(geometry, mat);
         m.position.addVectors(origin, new THREE.Vector3(0, 0, l + hl - 1));
         m.rotateX(-Math.PI / 2);

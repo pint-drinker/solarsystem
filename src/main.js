@@ -157,7 +157,7 @@ class SolarSystem {
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(this.nodeWidth, this.nodeHeight);
-    renderer.setClearColor(COLORS.black, 0);
+    renderer.setClearColor(0x000000, 0);
     this.node.appendChild(renderer.domElement);
     return renderer;
   }
@@ -169,7 +169,7 @@ class SolarSystem {
 
   createCamera() {
     const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 10000000);
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 0.75 / PLANET_SCALE);
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     camera.lookAt(this.scene.position);
     camera.visible = true;
@@ -181,9 +181,9 @@ class SolarSystem {
 
   createSpotLight() {
     //add in spotlight to track with camera
-    const spotLight = new THREE.SpotLight(COLOR_CODES.spotlight, 0.2);
+    const spotLight = new THREE.SpotLight(0xfafafa, 0.2);
     spotLight.up = this.camera.up;
-    const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 2 / PLANET_SCALE);
+    const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 2 / PLANET_SCALE);
     spotLight.position.set(pos.x, pos.y, pos.z);
     spotLight.castShadow = true;
     spotLight.angle = Math.PI / 12;
@@ -200,7 +200,7 @@ class SolarSystem {
   }
 
   createAmbientLight() {
-    const light = new THREE.AmbientLight(COLORS.soft_white, 0.5);
+    const light = new THREE.AmbientLight(0xfafafa, 0.5);
     this.scene.add(light);
     return light;
   }
@@ -269,8 +269,8 @@ class SolarSystem {
       return;
     }
     
-    var location = this.current_target.body.position.clone();
-    var dir = this.current_target.body.position.clone().normalize();
+    var location = this.current_target.group.position.clone();
+    var dir = this.current_target.group.position.clone().normalize();
     if (this.current_target.name == 'pluto') {
       location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
       this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
@@ -386,7 +386,7 @@ class SolarSystem {
     this.trackball.enabled = true;
     this.current_target = undefined;
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(SUN0.radius * 0.75 / PLANET_SCALE);
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
     this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     this.camera.lookAt(this.scene.position);
   }

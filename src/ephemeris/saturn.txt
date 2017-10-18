@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / PORT_LOGIN Mon Oct 16 08:06:23 2017 Pasadena, USA    / Horizons    
+Ephemeris / PORT_LOGIN Wed Oct 18 10:09:17 2017 Pasadena, USA    / Horizons    
 *******************************************************************************
 Target body name: Saturn (699)                    {source: sat389}
 Center body name: Sun (10)                        {source: sat389}
