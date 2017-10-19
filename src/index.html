@@ -9,10 +9,29 @@
                 padding: 0px;
                 overflow: hidden;
             }
-            #container {
+            #house {
+                position: absolute;
+                top: 0px;
+                left: 0px;
                 height: 100%;
                 width: 100%;
                 background: black;
+            }
+            #major_container {
+                position: absolute;
+                top: 0px;
+                left: 5px;
+                height: 40px;
+                width: 100%;
+                background: transparent;
+            }
+            #minor_container {
+                position: relative;
+                /*top: 40px;*/
+                /*left: 5px;*/
+                height: 50px;
+                width: 100%;
+                background: transparent;
             }
             #date_holder {
                 position: absolute;
@@ -20,7 +39,9 @@
                 right: 10px;
                 height: 40px;
                 width: 250px;
-                background: gray;
+                background: rgba(169, 169, 169, 0);
+                color: white;
+                font-family: "Times New Roman", Times, serif;
             }
             #time_info_holder {
                 position: absolute;
@@ -28,7 +49,9 @@
                 right: 10px;
                 height: 120px;
                 width: 250px;
-                background: gray;
+                background: rgba(169, 169, 169, 0);
+                color: white;
+                font-family: "Times New Roman", Times, serif;
             }
             #perspective_info {
                 position: absolute;
@@ -36,34 +59,66 @@
                 right: 10px;
                 height: 40px;
                 width: 250px;
-                background: gray;
+                background: rgba(169, 169, 169, 0);
+                color: white;
+                font-family: "Times New Roman", Times, serif;
             }
-            button {
+            .overlay {
+                position: absolute;
+                top: 50px;
+                left: 0px;
+                height: 50px;
+                width: 100%;
+                background: rgba(0, 0, 0, 0);
+            }
+            .button {
                 margin-top: 5px;
                 line-height: 30px;
                 font-weight: bold;
                 padding: 0 5px;
-                background: #67D0F2;
                 border: none;
             }
-            button:hover {
-                background: #ED6C24;
+            .button2:hover {
+                background-color: #ED6C24;
+                transition-duration: 0.4s;
             }
+            .button2 {
+                background-color: #4CAF50;
+            }
+            .button1:hover {
+                background-color: #ED6C24;
+                transition-duration: 0.4s;
+            }
+            .button1 {
+                background-color: #67D0F2;
+            }
+            
         </style>
     </head>
 	<body>
-        <div id="container">
-          <button id="sun_view">Sun (reset)</button>
-          <button id="mercury_view">Mercury</button>
-          <button id="venus_view">Venus</button>
-          <button id="earth_view">Earth</button>
-          <button id="moon_view">Moon</button>
-          <button id="mars_view">Mars</button>
-          <button id="jupiter_view">Jupiter</button>
-          <button id="saturn_view">Saturn</button>
-          <button id="uranus_view">Uranus</button>
-          <button id="neptune_view">Neptune</button>
-          <button id="pluto_view">Pluto</button>
+        <div id="house">
+            <!-- <img src="images/bkg.jpeg"/> -->
+        </div>
+        <div id="major_container">
+            <button class="button button1" id="sun_view">Sun (mobile view)</button>
+            <button class="button button1" id="mercury_view">Mercury</button>
+            <button class="button button1" id="venus_view">Venus</button>
+            <button class="button button1" id="earth_view">Earth</button>
+            <button class="button button1" id="mars_view">Mars</button>
+            <button class="button button1" id="jupiter_view">Jupiter</button>
+            <button class="button button1" id="saturn_view">Saturn</button>
+            <button class="button button1" id="uranus_view">Uranus</button>
+            <button class="button button1" id="neptune_view">Neptune</button>
+            <button class="button button1" id="pluto_view">Pluto</button>
+            <div id="minor_container">
+                <button class="button button2" id="moon_view">Earth's Moon</button>
+                <button class="button button2" id="io_view">Jupiter's Io</button>
+                <button class="button button2" id="europa_view">Jupiter's Europa</button>
+                <button class="button button2" id="ganymede_view">Jupiter's Ganymede</button>
+                <button class="button button2" id="callisto_view">Jupiter's Callisto</button>
+                <button class="button button2" id="titan_view">Saturn's Titan</button>
+                <button class="button button2" id="triton_view">Neptune's Triton</button>
+            </div>
         </div>
         <div id="date_holder">
         </div>

@@ -57,7 +57,7 @@ getDistanceString = function(meters) {
 class SolarSystem {
   constructor() {
     // initializing node
-    this.node = document.getElementById("container");
+    this.node = document.getElementById("house");
     this.node.width = window.innerWidth;
     this.node.height = window.innerHeight;
     this.nodeWidth = window.innerWidth;
@@ -143,7 +143,7 @@ class SolarSystem {
     
      // additional setups
     this.setUpControls();
-    this.axes = new ThreeAxes(document.getElementById("container"), this.camera);
+    this.axes = new ThreeAxes(document.getElementById("house"), this.camera);
 
     // now add everything to the scene
     for (var i in this.bodies) {
@@ -384,6 +384,16 @@ class SolarSystem {
 
 
   // button interaction functions
+  toSunView() {
+    console.log('want sun?');
+    this.trackball.enabled = true;
+    this.current_target = undefined;
+    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
+    this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    this.camera.lookAt(this.scene.position);
+  }
+
   toEarthView() {
     console.log('want earth?');
     this.current_target = this.bodies.earth;
@@ -393,22 +403,10 @@ class SolarSystem {
   }
 
   toMoonView() {
-    console.log('want moon?');
     this.trackball.enabled = false;
     this.current_target = this.bodies.moon;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
-    console.log(this.current_target.host.name);
-  }
-
-  toSunView() {
-    console.log('want sun?');
-    this.trackball.enabled = true;
-    this.current_target = undefined;
-    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
-    this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.camera.lookAt(this.scene.position);
   }
 
   toMercuryView() {
@@ -443,11 +441,46 @@ class SolarSystem {
      FRAMES_TO_ROTATE);
   }
 
+  toIoView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.Io;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toEuropaView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.europa;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toGanymedeView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.ganymede;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toCallistoView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.callisto;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
   toSaturnView() {
     console.log('want saturn?');
     this.current_target = this.bodies.saturn;
     this.trackball.enabled = false;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
+  toTitanView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.titan;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
@@ -467,6 +500,13 @@ class SolarSystem {
      FRAMES_TO_ROTATE);
   }
 
+  toTritonView() {
+    this.trackball.enabled = false;
+    this.current_target = this.bodies.triton;
+    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
+     FRAMES_TO_ROTATE);
+  }
+
   toPlutoView() {
     console.log('want pluto?');
     this.current_target = this.bodies.pluto;
@@ -479,15 +519,14 @@ class SolarSystem {
     this.onWindowResize = this.onWindowResize.bind(this);
     window.addEventListener('resize', this.onWindowResize, false);
 
+    this.toSunView = this.toSunView.bind(this);
+    document.getElementById('sun_view').onclick = this.toSunView;
+
     this.toEarthView = this.toEarthView.bind(this);
     document.getElementById('earth_view').onclick = this.toEarthView;
 
     this.toMoonView = this.toMoonView.bind(this);
     document.getElementById('moon_view').onclick = this.toMoonView;
-
-    // also the rest view
-    this.toSunView = this.toSunView.bind(this);
-    document.getElementById('sun_view').onclick = this.toSunView;
 
     this.toMercuryView = this.toMercuryView.bind(this);
     document.getElementById('mercury_view').onclick = this.toMercuryView;
@@ -501,14 +540,32 @@ class SolarSystem {
     this.toJupiterView = this.toJupiterView.bind(this);
     document.getElementById('jupiter_view').onclick = this.toJupiterView;
 
+    this.toIoView = this.toIoView.bind(this);
+    document.getElementById('io_view').onclick = this.toIoView;
+
+    this.toGanymedeView = this.toGanymedeView.bind(this);
+    document.getElementById('ganymede_view').onclick = this.toGanymedeView;
+
+    this.toEuropaView = this.toEuropaView.bind(this);
+    document.getElementById('europa_view').onclick = this.toEuropaView;
+
+    this.toCallistoView = this.toCallistoView.bind(this);
+    document.getElementById('callisto_view').onclick = this.toCallistoView;
+
     this.toSaturnView = this.toSaturnView.bind(this);
     document.getElementById('saturn_view').onclick = this.toSaturnView;
+
+    this.toTitanView = this.toTitanView.bind(this);
+    document.getElementById('titan_view').onclick = this.toTitanView;
 
     this.toUranusView = this.toUranusView.bind(this);
     document.getElementById('uranus_view').onclick = this.toUranusView;
 
     this.toNeptuneView = this.toNeptuneView.bind(this);
     document.getElementById('neptune_view').onclick = this.toNeptuneView;
+
+    this.toTritonView = this.toTritonView.bind(this);
+    document.getElementById('triton_view').onclick = this.toTritonView;
 
     this.toPlutoView = this.toPlutoView.bind(this);
     document.getElementById('pluto_view').onclick = this.toPlutoView;
