@@ -152,15 +152,17 @@ class SolarSystem {
     // now add everything to the scene
     // NOTE, ONLY CAN RECEIVE OR CAST SHADOWS, CANT DO BOTH, SO RIGHT NOW ITS PLANETS ON THE MOONS
     for (var i in this.bodies) {
-      if (this.bodies[i].name == 'sun') {
-        this.bodies[i].body.castShadow = false;
-        this.bodies[i].body.receiveShadow = false;
-      } else if (this.bodies[i].host) {
-        this.bodies[i].body.castShadow = false;
-        this.bodies[i].body.receiveShadow = true;
-      } else {
-        this.bodies[i].body.castShadow = true;
-        this.bodies[i].body.receiveShadow = false;
+      if (SHADOWS_ENABLED) {
+        if (this.bodies[i].name == 'sun') {
+          this.bodies[i].body.castShadow = false;
+          this.bodies[i].body.receiveShadow = false;
+        } else if (this.bodies[i].host) {
+          this.bodies[i].body.castShadow = false;
+          this.bodies[i].body.receiveShadow = true;
+        } else {
+          this.bodies[i].body.castShadow = true;
+          this.bodies[i].body.receiveShadow = false;
+        }
       }
       this.scene.add(this.bodies[i].group);
     }
@@ -169,6 +171,18 @@ class SolarSystem {
     this.add_event_listeners();
 
     this.updatePerspective();
+
+    // CREATING GUI SLIDERS
+    // gui = new dat.GUI();
+    // parameters = 
+    // { c: 1.0, p: 1.4, bs: false, fs: true, nb: false, ab: true, mv: true, color: "#ffff00" };
+    
+    // var top = gui.addFolder('Glow Shader Attributes');
+    
+    // var cGUI = top.add( parameters, 'c' ).min(0.0).max(1.0).step(0.01).name("c").listen();
+    // cGUI.onChange( function(value) { 
+    //   console.log(parameters.c); 
+    // });
 
     console.log(this);
     this.run();
@@ -336,6 +350,11 @@ class SolarSystem {
   }
 
   updateControls() {
+    if (this.current_target || this.paused) {
+      this.trackball.noPan = true;
+    } else {
+      this.trackball.noPan = false;
+    }
     this.trackball.update();
   }
 

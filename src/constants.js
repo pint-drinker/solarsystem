@@ -11,6 +11,8 @@ const DEFAULT_FRAMES = 10;
 const DEFAULT_dT = 3600 * 24 / 100;
 const DEFAULT_UPDATE_TIME = 1000;  // update text every second, or 1000 milliseconds
 
+const SHADOWS_ENABLED = false;
+
 const G = 6.67408 * Math.pow(10, -11);
 
 

@@ -29,7 +29,6 @@ class OrbitalBody {
 	    	this.group.add(this.rings);
 	    }
 
-
 	    this.max_points = 500;
 	    this.points = [];
 
@@ -48,6 +47,7 @@ class OrbitalBody {
 				bumpScale	: 0.05,
 				specularMap	: THREE.ImageUtils.loadTexture('images/earthspec1k.jpg'),
 				specular	: new THREE.Color('grey'),
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
@@ -69,6 +69,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/marsmap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/marsbump1k.jpg'),
 				bumpScale: 0.05,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -78,6 +79,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/mercurymap.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/mercurybump.jpg'),
 				bumpScale: 0.005,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
@@ -87,6 +89,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/venusmap.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/venusbump.jpg'),
 				bumpScale: 0.005,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -97,6 +100,7 @@ class OrbitalBody {
 				map	: texture,
 				bumpMap	: texture,
 				bumpScale: 0.02,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
@@ -107,6 +111,7 @@ class OrbitalBody {
 				map	: texture,
 				bumpMap	: texture,
 				bumpScale: 0.05,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -117,6 +122,7 @@ class OrbitalBody {
 				map	: texture,
 				bumpMap	: texture,
 				bumpScale: 0.05,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -127,6 +133,7 @@ class OrbitalBody {
 				map	: texture,
 				bumpMap	: texture,
 				bumpScale: 0.05,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -136,6 +143,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/plutomap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/plutobump1k.jpg'),
 				bumpScale: 0.005,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh	
@@ -145,6 +153,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/moonmap1k.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/moonbump1k.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -154,6 +163,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -163,6 +173,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -172,6 +183,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -181,6 +193,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -190,6 +203,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
@@ -199,6 +213,7 @@ class OrbitalBody {
 				map	: THREE.ImageUtils.loadTexture('images/io.jpg'),
 				bumpMap	: THREE.ImageUtils.loadTexture('images/io.jpg'),
 				bumpScale: 0.002,
+				shininess: 0
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
