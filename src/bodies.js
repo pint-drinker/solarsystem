@@ -29,6 +29,7 @@ class OrbitalBody {
 	    	this.group.add(this.rings);
 	    }
 
+
 	    this.max_points = 500;
 	    this.points = [];
 
@@ -57,8 +58,10 @@ class OrbitalBody {
 				map	: texture,
 				bumpMap	: texture,
 				bumpScale: 0.05,
-			})
-			var mesh	= new THREE.Mesh(geometry, material)
+				transparent: true,
+				opacity: 1
+			});
+			var mesh	= new THREE.Mesh(geometry, material);
 			return mesh	
 		} else if (name == 'mars') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
@@ -294,9 +297,15 @@ class OrbitalBody {
 				y_comp + sep_vec.y * fac, 
 				z_comp + sep_vec.z * fac);
 		}
-		this.group.rotation.set(0, 0, 0); 
-		this.group.rotateX(Math.PI / 2 - this.obliquity);  // for mapping transformation, and matches seasons correctly
-		this.group.rotateY(this.theta);
+		if (this.name == 'sun') {
+			this.body.rotation.set(0, 0, 0); 
+			this.body.rotateX(Math.PI / 2 - this.obliquity);  // for mapping transformation, and matches seasons correctly
+			this.body.rotateY(this.theta);
+		} else {
+			this.group.rotation.set(0, 0, 0); 
+			this.group.rotateX(Math.PI / 2 - this.obliquity);  // for mapping transformation, and matches seasons correctly
+			this.group.rotateY(this.theta);
+		}
 	}
 }
 

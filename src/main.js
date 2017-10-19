@@ -53,7 +53,6 @@ getDistanceString = function(meters) {
   return st;
 }
 
-
 class SolarSystem {
   constructor() {
     // initializing node
@@ -65,7 +64,6 @@ class SolarSystem {
 
     // body population info
     this.data = data;
-    console.log(data);
 
     // number of calculations per second
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
@@ -122,7 +120,6 @@ class SolarSystem {
     this.bodies.titan.host = this.bodies.saturn;
     this.bodies.triton.host = this.bodies.neptune;
 
-
     // ray casting
     this.mouse = {x: 0, y: 0};
     this.select_mouse = {x: 0, y: 0};
@@ -133,20 +130,38 @@ class SolarSystem {
     // world elements
     this.renderer = this.createRenderer();
     this.scene = this.createScene();
-    this.camera = this.createCamera();
-    this.spotLight = this.createSpotLight();
-    this.light = this.createAmbientLight();
-    this.directionalLight = this.createDirectionalLight();
 
-    // for planet tracking
+    // viewing
+    this.camera = this.createCamera();
+    this.light = this.createAmbientLight();
+    this.point_light = this.createPointLight();
+
+    // get the sun glow
+    this.sun_glow = this.createSunGlow();
+    this.bodies.sun.group.add(this.sun_glow)
+
+    // for planet tracking and camera and spotlight updating
     this.current_target = undefined;
+    this.camera_target = this.bodies.sun.group.position;
+
     
      // additional setups
     this.setUpControls();
     this.axes = new ThreeAxes(document.getElementById("house"), this.camera);
 
     // now add everything to the scene
+    // NOTE, ONLY CAN RECEIVE OR CAST SHADOWS, CANT DO BOTH, SO RIGHT NOW ITS PLANETS ON THE MOONS
     for (var i in this.bodies) {
+      if (this.bodies[i].name == 'sun') {
+        this.bodies[i].body.castShadow = false;
+        this.bodies[i].body.receiveShadow = false;
+      } else if (this.bodies[i].host) {
+        this.bodies[i].body.castShadow = false;
+        this.bodies[i].body.receiveShadow = true;
+      } else {
+        this.bodies[i].body.castShadow = true;
+        this.bodies[i].body.receiveShadow = false;
+      }
       this.scene.add(this.bodies[i].group);
     }
     this.createStars();
@@ -165,6 +180,7 @@ class SolarSystem {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(this.nodeWidth, this.nodeHeight);
     renderer.setClearColor(0x000000, 0);
+    renderer.shadowMapEnabled = true;
     this.node.appendChild(renderer.domElement);
     return renderer;
   }
@@ -186,31 +202,47 @@ class SolarSystem {
     return camera;
   }
 
-  createSpotLight() {
-    //add in spotlight to track with camera
-    const spotLight = new THREE.SpotLight(0xfafafa, 0.2);
-    spotLight.up = this.camera.up;
-    const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 2 / PLANET_SCALE);
-    spotLight.position.set(pos.x, pos.y, pos.z);
-    spotLight.castShadow = true;
-    spotLight.angle = Math.PI / 12;
-    // spotLight.visible = false;
-    this.scene.add(spotLight);
-    return spotLight;
-  }
-
-  createDirectionalLight() {
-    const dirLight = new THREE.DirectionalLight( 0xffffff , 0.8);
-    dirLight.position.set( 0, 0, 1 ).normalize();
-    this.scene.add( dirLight );
-    return dirLight;
-  }
-
   createAmbientLight() {
-    const light = new THREE.AmbientLight(0xfafafa, 0.5);
+    const light = new THREE.AmbientLight(0xfafafa, 0.3);
     this.scene.add(light);
     return light;
   }
+
+  createPointLight() {
+    var light = new THREE.PointLight(0xffffff, 1, 11000, 1);
+    light.position.set(0, 0, 0);
+    light.castShadow = true;
+    light.shadowDarkness = 0.7;
+    this.scene.add(light);
+    return light;
+  }
+
+  createSunGlow() {
+      //http://stemkoski.github.io/Three.js/Shader-Glow.html
+      const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
+      var customMaterial = new THREE.ShaderMaterial( 
+      {
+          uniforms: 
+        { 
+          "c":   { type: "f", value: 0.0 },
+          "p":   { type: "f", value: 2.0 },
+          glowColor: { type: "c", value: new THREE.Color(0xffff00) },
+          viewVector: { type: "v3", value: cameraPosition }
+        },
+        vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+        fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+        side: THREE.FrontSide,
+        blending: THREE.AdditiveBlending,
+        transparent: true
+      }   );
+        
+      var glow = new THREE.Mesh( this.bodies.sun.body.geometry.clone(), customMaterial.clone() );
+      glow.position.set(this.bodies.sun.group.position.x, this.bodies.sun.group.position.y, this.bodies.sun.group.position.z);
+      glow.scale.multiplyScalar(1.01);
+      this.scene.add(glow);
+      return glow;
+  }
+
 
   createStars() {
     var radius = 5000;
@@ -287,6 +319,7 @@ class SolarSystem {
         this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
       }
       this.camera.lookAt(this.bodies.sun.group.position);
+      this.camera_target = this.bodies.sun.group.position;
     } else {
       var location = this.current_target.group.position.clone();
       var loc2 = this.current_target.host.group.position.clone();
@@ -296,23 +329,16 @@ class SolarSystem {
       location.add(separation_vector.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
       this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
       this.camera.lookAt(this.current_target.host.group.position);
+      this.camera_target = this.current_target.host.group.position;
     }
-    
+  }
+
+  updateSunGlow() {
+    this.sun_glow.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, this.sun_glow.position);
   }
 
   updateControls() {
     this.trackball.update();
-  }
-
-  updateSpotlight() {
-    const sc = this.camera.position.length();
-    this.spotLight.position.set(
-      this.camera.position.x,
-      this.camera.position.y,
-      this.camera.position.z
-    );
-    this.spotLight.angle = Math.atan(sc / sc);
-    this.spotLight.target.position.set(this.scene.position);
   }
 
   // get the gravitational acceleration contribution from another orbital body
@@ -382,7 +408,6 @@ class SolarSystem {
     this.perspective_holder.innerHTML = this.p_label + getDistanceString(this.viewer_distance);
   }
 
-
   // button interaction functions
   toSunView() {
     console.log('want sun?');
@@ -443,7 +468,7 @@ class SolarSystem {
 
   toIoView() {
     this.trackball.enabled = false;
-    this.current_target = this.bodies.Io;
+    this.current_target = this.bodies.io;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
@@ -598,9 +623,10 @@ class SolarSystem {
     // THIS IS VERY IMPORTANT TO KNOW, VISUAL STUFF NEEDS TO REFER TO THE LAST ROUND OF CALCULATIONS
     // AT LEASET WITH CAMERA.LOOKAT()
     this.updateCamera();
-    this.render();
-    this.updateSpotlight();
     this.updateAxCam();
+    this.updateSunGlow();
+    this.render();
+   
     this.updateControls();
     this.updateBodies();
     // this.updateDate();  // remove this into update if things are too slow or burning too much energy, worried it is
