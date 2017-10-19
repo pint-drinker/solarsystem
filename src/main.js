@@ -408,138 +408,123 @@ class SolarSystem {
 
   // button interaction functions
   toSunView() {
-    console.log('want sun?');
-    this.trackball.enabled = true;
-    this.current_target = undefined;
-    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
-    this.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.camera.lookAt(this.scene.position);
+    this.onResetView();
   }
 
   toEarthView() {
-    console.log('want earth?');
     this.current_target = this.bodies.earth;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.earth.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toMoonView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.moon.group.position;
     this.current_target = this.bodies.moon;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toMercuryView() {
-    console.log('want mercury?');
     this.current_target = this.bodies.mercury;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.mercury.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE / 15);
   }
 
   toVenusView() {
-    console.log('want venus?');
     this.current_target = this.bodies.venus;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.venus.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE / 10);
   }
 
   toMarsView() {
-    console.log('want mars?');
     this.current_target = this.bodies.mars;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.mars.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toJupiterView() {
-    console.log('want jupiter?');
     this.current_target = this.bodies.jupiter;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.jupiter.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toIoView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.io.group.position;
     this.current_target = this.bodies.io;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toEuropaView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.europa.group.position;
     this.current_target = this.bodies.europa;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toGanymedeView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.ganymede.group.position;
     this.current_target = this.bodies.ganymede;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toCallistoView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.callisto.group.position;
     this.current_target = this.bodies.callisto;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toSaturnView() {
-    console.log('want saturn?');
     this.current_target = this.bodies.saturn;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.saturn.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toTitanView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.titan.group.position;
     this.current_target = this.bodies.titan;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toUranusView() {
-    console.log('want saturn?');
     this.current_target = this.bodies.uranus;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.uranus.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toNeptuneView() {
-    console.log('want neptune?');
     this.current_target = this.bodies.neptune;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.neptune.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toTritonView() {
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.triton.group.position;
     this.current_target = this.bodies.triton;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   toPlutoView() {
-    console.log('want pluto?');
     this.current_target = this.bodies.pluto;
-    this.trackball.enabled = false;
+    this.trackball.target = this.bodies.pluto.group.position;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
      FRAMES_TO_ROTATE);
   }
 
   onResetView() {
-    this.trackball.enabled = true;
+    this.trackball.target = this.bodies.sun.group.position;
     this.current_target = undefined;
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
     this.trackball.reset();
@@ -647,7 +632,7 @@ class SolarSystem {
     }
     this.updateControls();
     this.updateBodies();
-    this.updateCamera();
+    // this.updateCamera();
     this.updateAxCam();
     this.updateSunGlow();
 
