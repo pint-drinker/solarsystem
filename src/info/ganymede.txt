@@ -1,0 +1,12 @@
+*******************************************************************************
+ Revised: Jun 17, 2016           Ganymede / (Jupiter)                       503
+
+ SATELLITE PHYSICAL PROPERTIES:
+  Radius (km)             = 2634   +- 10     Density (g cm^-3)  =  1.94 +- 0.02
+  Mass (10^20 kg )        = 1482   +- 1      Geometric Albedo   =  0.4
+
+ SATELLITE ORBITAL DATA:
+  Semi-major axis, a (km) = 1070.0428 (10^3) Orbital period     = 7.154553 d
+  Eccentricity, e         = 0.0006           Rotational period  = Synchronous
+  Inclination, i  (deg)   = 0.186
+*******************************************************************************

@@ -1,5 +1,5 @@
 *******************************************************************************
-Ephemeris / PORT_LOGIN Wed Oct 18 10:09:15 2017 Pasadena, USA    / Horizons    
+Ephemeris / PORT_LOGIN Wed Oct 18 16:48:59 2017 Pasadena, USA    / Horizons    
 *******************************************************************************
 Target body name: Jupiter (599)                   {source: jup341}
 Center body name: Sun (10)                        {source: DE431mx}

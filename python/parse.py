@@ -104,12 +104,47 @@ class PlanetConstants:
     jupiter['obliquity'] = 3.12 * math.pi / 180
     planet_dict['jupiter'] = jupiter
 
+    io = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/io.txt')
+    io['radius'] = 1821300
+    io['mass'] = 893.3e20
+    io['omega'] = 2 * math.pi / 1.769138 / 24 / 3600  # synchronous
+    io['obliquity'] = 0  # not given
+    planet_dict['io'] = io
+
+    europa = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/europa.txt')
+    europa['radius'] = 1565000
+    europa['mass'] = 479.7e20
+    europa['omega'] = 2 * math.pi / 3.551810 / 24 / 3600  # synchronous
+    europa['obliquity'] = 0  # not given
+    planet_dict['europa'] = europa
+
+    ganymede = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/ganymede.txt')
+    ganymede['radius'] = 2634000
+    ganymede['mass'] = 1482e20
+    ganymede['omega'] = 2 * math.pi / 7.154553 / 24 / 3600  # synchronous
+    ganymede['obliquity'] = 0  # not given
+    planet_dict['ganymede'] = ganymede
+
+    callisto = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/callisto.txt')
+    callisto['radius'] = 2403000
+    callisto['mass'] = 1076e20
+    callisto['omega'] = 2 * math.pi / 16.689018 / 24 / 3600  # synchronous
+    callisto['obliquity'] = 0  # not given
+    planet_dict['callisto'] = callisto
+
     saturn = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/saturn.txt')
     saturn['radius'] = 60268000
     saturn['mass'] = 5.68319 * pow(10, 26)
     saturn['omega'] = 1.63785 * pow(10, -4)
     saturn['obliquity'] = 26.73 * math.pi / 180
     planet_dict['saturn'] = saturn
+
+    titan = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/titan.txt')
+    titan['radius'] = 2575500
+    titan['mass'] = 13455.3e19
+    titan['omega'] = 2 * math.pi / 15.945421 / 24 / 3600  # synchronous
+    titan['obliquity'] = 0  # not given
+    planet_dict['titan'] = titan
 
     uranus = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/uranus.txt')
     uranus['radius'] = 25559000
@@ -124,6 +159,13 @@ class PlanetConstants:
     neptune['omega'] = 1.083 * pow(10, -4)
     neptune['obliquity'] = 29.56 * math.pi / 180
     planet_dict['neptune'] = neptune
+
+    triton = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/triton.txt')
+    triton['radius'] = 1352600
+    triton['mass'] = 214.7e20
+    triton['omega'] = 2 * math.pi / 5.876854 / 24 / 3600  # synchronous
+    triton['obliquity'] = 0  # not given
+    planet_dict['triton'] = triton
 
     pluto = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/pluto.txt')
     pluto['radius'] = 1195000

@@ -20,11 +20,18 @@ earth = {'id': 399, 'local': 'earth.txt', 'remote_info': '', 'remote_eph': ''}
 moon = {'id': 301, 'local': 'moon.txt', 'remote_info': '', 'remote_eph': ''}
 mars = {'id': 499, 'local': 'mars.txt', 'remote_info': '', 'remote_eph': ''}
 jupiter = {'id': 599, 'local': 'jupiter.txt', 'remote_info': '', 'remote_eph': ''}
+io = {'id': 501, 'local': 'io.txt', 'remote_info': '', 'remote_eph': ''}
+europa = {'id': 502, 'local': 'europa.txt', 'remote_info': '', 'remote_eph': ''}
+ganymede = {'id': 503, 'local': 'ganymede.txt', 'remote_info': '', 'remote_eph': ''}
+callisto = {'id': 504, 'local': 'callisto.txt', 'remote_info': '', 'remote_eph': ''}
 saturn = {'id': 699, 'local': 'saturn.txt', 'remote_info': '', 'remote_eph': ''}
+titan = {'id': 606, 'local': 'titan.txt', 'remote_info': '', 'remote_eph': ''}
 uranus = {'id': 799, 'local': 'uranus.txt', 'remote_info': '', 'remote_eph': ''}
 neptune = {'id': 899, 'local': 'neptune.txt', 'remote_info': '', 'remote_eph': ''}
+triton = {'id': 801, 'local': 'triton.txt', 'remote_info': '', 'remote_eph': ''}
 pluto = {'id': 999, 'local': 'pluto.txt', 'remote_info': '', 'remote_eph': ''}
-bodies = [sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus, neptune, pluto]
+bodies = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto,
+          saturn, titan, uranus, neptune, triton, pluto]
 
 # path to get us to the telnet interface to grab ephemeris
 open_path = 'telnet horizons.jpl.nasa.gov 6775'

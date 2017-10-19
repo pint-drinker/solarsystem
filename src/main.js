@@ -109,11 +109,17 @@ class SolarSystem {
     // bodies
     this.bodies = {};
     for (var key in data) {
-      console.log(data[key]);
+      console.log(key);
       this.bodies[key] = new OrbitalBody(data[key], key);
     }
     // now add to the moon the earth as its host
     this.bodies.moon.host = this.bodies.earth;
+    this.bodies.io.host = this.bodies.jupiter;
+    this.bodies.europa.host = this.bodies.jupiter;
+    this.bodies.ganymede.host = this.bodies.jupiter;
+    this.bodies.callisto.host = this.bodies.jupiter;
+    this.bodies.titan.host = this.bodies.saturn;
+    this.bodies.triton.host = this.bodies.neptune;
 
 
     // ray casting

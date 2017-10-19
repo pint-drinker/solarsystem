@@ -145,6 +145,65 @@ class OrbitalBody {
 			})
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
+		} else if (name == 'titan') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'triton') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'ganymede') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'callisto') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'europa') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else if (name == 'io') {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
+			var material	= new THREE.MeshPhongMaterial({
+				map	: THREE.ImageUtils.loadTexture('images/io.jpg'),
+				bumpMap	: THREE.ImageUtils.loadTexture('images/io.jpg'),
+				bumpScale: 0.002,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh
+		} else {
+			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32);
+			var material	= new THREE.MeshPhongMaterial({color: 0x00ffff});
+			var mesh = new THREE.Mesh(geometry, material);
+			return mesh;
 		}
 	}
 
@@ -230,9 +289,10 @@ class OrbitalBody {
 			var y_comp = this.host.position.y / DISTANCE_SCALE;
 			var z_comp = this.host.position.z / DISTANCE_SCALE;
 			var sep_vec = new THREE.Vector3().subVectors(this.host.position.clone(), this.position.clone());
-			this.group.position.set(x_comp + sep_vec.x / DISTANCE_SCALE * MOON_FAC, 
-				y_comp + sep_vec.y / DISTANCE_SCALE * MOON_FAC, 
-				z_comp + sep_vec.z / DISTANCE_SCALE * MOON_FAC);
+			var fac = 1 / DISTANCE_SCALE * MOON_FAC * this.host.radius / 6371010;  // scaling based on siz of planet realtive to earth
+			this.group.position.set(x_comp + sep_vec.x * fac,   
+				y_comp + sep_vec.y * fac, 
+				z_comp + sep_vec.z * fac);
 		}
 		this.group.rotation.set(0, 0, 0); 
 		this.group.rotateX(Math.PI / 2 - this.obliquity);  // for mapping transformation, and matches seasons correctly
