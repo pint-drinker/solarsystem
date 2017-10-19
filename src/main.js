@@ -53,6 +53,16 @@ getDistanceString = function(meters) {
   return st;
 }
 
+var deltaT = DEFAULT_dT;
+var numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+var frame_rate = 60;
+
+resolveTimeStep = function (weeks_per_sec, calc_per_frame, frames_per_sec) {
+    return 604800 / calc_per_frame / frames_per_sec * weeks_per_sec
+  }
+
+
+
 class SolarSystem {
   constructor() {
     // initializing node
@@ -66,11 +76,6 @@ class SolarSystem {
     this.data = data;
 
     this.paused = false;
-
-    // number of calculations per second
-    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-    // The length of the time increment, in seconds.
-    this.deltaT = DEFAULT_dT;
 
     // time and text tracking
     this.frame_count = 0;
@@ -93,7 +98,7 @@ class SolarSystem {
     this.fr_label = '<br />FPS: ';
     this.tf_label = '<br />Time Factor: ';
     this.ts_label = '<br />1 sec = ';
-    this.frame_rate = 0;
+    frame_rate = 0;
     this.time_per_frame = 0;
     this.time_per_frame_s = '';
     this.time_factor = 0;
@@ -173,16 +178,18 @@ class SolarSystem {
     this.updatePerspective();
 
     // CREATING GUI SLIDERS
-    // gui = new dat.GUI();
-    // parameters = 
-    // { c: 1.0, p: 1.4, bs: false, fs: true, nb: false, ab: true, mv: true, color: "#ffff00" };
+    this.weeks_sec = 0.14;
+    this.gui = new dat.GUI();
+    var parameters = 
+    {time_scale : 0.14, color: "#ffff00" };  // time scaling units are in weeks
     
-    // var top = gui.addFolder('Glow Shader Attributes');
+    var top = this.gui.addFolder('Time Scaling');
     
-    // var cGUI = top.add( parameters, 'c' ).min(0.0).max(1.0).step(0.01).name("c").listen();
-    // cGUI.onChange( function(value) { 
-    //   console.log(parameters.c); 
-    // });
+    var cGUI = 
+    top.add(parameters, 'time_scale' ).min(1.65 * Math.pow(10, -6)).max(52).step(0.01).name("Weeks/Sec").listen();
+    cGUI.onChange( function(value) { 
+      deltaT = resolveTimeStep(value, numberOfCalculationsPerFrame, frame_rate);
+    });
 
     console.log(this);
     this.run();
@@ -373,7 +380,7 @@ class SolarSystem {
 
   updateBodies() {
     // perform updating with delegated number of calculations per frame
-    for (var k = 0; k < this.numberOfCalculationsPerFrame; k++) {
+    for (var k = 0; k < numberOfCalculationsPerFrame; k++) {
       // first need to reset the accelerations of all of the bodies
       for (var key in this.bodies) {
         this.bodies[key].acceleration.set(0, 0, 0);
@@ -392,7 +399,7 @@ class SolarSystem {
 
       // now update all the telemetry of all the bodies
       for (var key in this.bodies) {
-        this.bodies[key].update_kinematics(this.deltaT);
+        this.bodies[key].update_kinematics(deltaT);
       }
     }
     // now move the actual bodies on the screen
@@ -403,7 +410,7 @@ class SolarSystem {
 
   // DOUBLE CHECK THIS IS NOT OVER COUNTING BY ONE FRAME
   updateDate() {
-    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3);
+    this.current_time += numberOfCalculationsPerFrame * deltaT * Math.pow(10, 3);
   }
 
   showDate() {
@@ -412,13 +419,13 @@ class SolarSystem {
   }
 
   updateTime() {
-    this.time_per_frame = this.numberOfCalculationsPerFrame * this.deltaT;  // in seconds, going to need to scale this later
+    this.time_per_frame = numberOfCalculationsPerFrame * deltaT;  // in seconds, going to need to scale this later
     this.time_per_frame_s = getTimeString(this.time_per_frame);
-    this.time_factor = Math.floor(this.time_per_frame * this.frame_rate);
+    this.time_factor = Math.floor(this.time_per_frame * frame_rate);
     this.time_factor_s = getTimeString(this.time_factor);
-    this.time_info_holder.innerHTML = this.kt_label + this.deltaT.toString() + this.cc_label + 
-      this.numberOfCalculationsPerFrame.toString() + this.dt_label + this.time_per_frame_s + 
-      this.fr_label + this.frame_rate.toString() + this.tf_label + this.time_factor.toString() +
+    this.time_info_holder.innerHTML = this.kt_label + Math.floor(deltaT).toString() + this.cc_label + 
+      numberOfCalculationsPerFrame.toString() + this.dt_label + this.time_per_frame_s + 
+      this.fr_label + frame_rate.toString() + this.tf_label + this.time_factor.toString() +
       this.ts_label + this.time_factor_s;
   }
 
@@ -436,119 +443,103 @@ class SolarSystem {
   toEarthView() {
     this.current_target = this.bodies.earth;
     this.trackball.target = this.bodies.earth.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toMoonView() {
     this.trackball.target = this.bodies.moon.group.position;
     this.current_target = this.bodies.moon;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toMercuryView() {
     this.current_target = this.bodies.mercury;
     this.trackball.target = this.bodies.mercury.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE / 15);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
   }
 
   toVenusView() {
     this.current_target = this.bodies.venus;
     this.trackball.target = this.bodies.venus.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE / 10);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toMarsView() {
     this.current_target = this.bodies.mars;
     this.trackball.target = this.bodies.mars.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toJupiterView() {
     this.current_target = this.bodies.jupiter;
     this.trackball.target = this.bodies.jupiter.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toIoView() {
     this.trackball.target = this.bodies.io.group.position;
     this.current_target = this.bodies.io;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toEuropaView() {
     this.trackball.target = this.bodies.europa.group.position;
     this.current_target = this.bodies.europa;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toGanymedeView() {
     this.trackball.target = this.bodies.ganymede.group.position;
     this.current_target = this.bodies.ganymede;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toCallistoView() {
     this.trackball.target = this.bodies.callisto.group.position;
     this.current_target = this.bodies.callisto;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toSaturnView() {
     this.current_target = this.bodies.saturn;
     this.trackball.target = this.bodies.saturn.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toTitanView() {
     this.trackball.target = this.bodies.titan.group.position;
     this.current_target = this.bodies.titan;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toUranusView() {
     this.current_target = this.bodies.uranus;
     this.trackball.target = this.bodies.uranus.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toNeptuneView() {
     this.current_target = this.bodies.neptune;
     this.trackball.target = this.bodies.neptune.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toTritonView() {
     this.trackball.target = this.bodies.triton.group.position;
     this.current_target = this.bodies.triton;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   toPlutoView() {
     this.current_target = this.bodies.pluto;
     this.trackball.target = this.bodies.pluto.group.position;
-    this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.omega / this.deltaT /
-     FRAMES_TO_ROTATE);
+    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
   }
 
   onResetView() {
     this.trackball.target = this.bodies.sun.group.position;
     this.current_target = undefined;
-    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+    deltaT = DEFAULT_dT;
     this.trackball.reset();
   }
 
@@ -559,6 +550,7 @@ class SolarSystem {
       this.updateDate();
       this.paused = true;
     }
+    console.log(deltaT);
   }
 
   add_event_listeners() {
@@ -644,11 +636,13 @@ class SolarSystem {
   }
 
   animate() {
-    requestAnimationFrame(this.animate.bind(this));    
+    requestAnimationFrame(this.animate.bind(this)); 
     this.render();
   }
 
   render() {
+    
+
     this.updateControls();
     this.updateAxCam();
     this.updateSunGlow();
@@ -662,7 +656,7 @@ class SolarSystem {
     this.frame_count += 1;
     let t = performance.now();
     if (t - this.last_update_time > this.update_dt) {
-      this.frame_rate = Math.floor(this.frame_count / (t - this.last_update_time) * 1000);
+      frame_rate = Math.floor(this.frame_count / (t - this.last_update_time) * 1000);
       this.last_update_time = t;
       // update the date before resetting frame count
       this.showDate();
