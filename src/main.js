@@ -384,7 +384,10 @@ class SolarSystem {
 
   // DOUBLE CHECK THIS IS NOT OVER COUNTING BY ONE FRAME
   updateDate() {
-    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3) * this.frame_count;
+    this.current_time += this.numberOfCalculationsPerFrame * this.deltaT * Math.pow(10, 3);
+  }
+
+  showDate() {
     this.current_date = new Date(this.current_time);
     this.date_holder.innerHTML = this.date_label + this.current_date.toString();
   }
@@ -627,14 +630,14 @@ class SolarSystem {
   }
 
   render() {
-    if (this.paused) {
-      return;
-    }
     this.updateControls();
-    this.updateBodies();
-    // this.updateCamera();
     this.updateAxCam();
     this.updateSunGlow();
+
+    if (!this.paused) {
+      this.updateBodies();
+      this.updateDate();
+    }
 
     // time tracking
     this.frame_count += 1;
@@ -643,13 +646,13 @@ class SolarSystem {
       this.frame_rate = Math.floor(this.frame_count / (t - this.last_update_time) * 1000);
       this.last_update_time = t;
       // update the date before resetting frame count
-      this.updateDate();
+      this.showDate();
       this.frame_count = 0;
       this.updateTime();
       // update the viewer distance
       this.updatePerspective();
     }
-
+    
     this.renderer.render(this.scene, this.camera);
     this.axes.renderer.render(this.axes.scene, this.axes.camera);
   }
