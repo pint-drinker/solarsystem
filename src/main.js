@@ -1,68 +1,6 @@
 
 var ct = 0;
 
-getNodeComputedProperty = (node, prop) => {
-  return window.getComputedStyle(node, null).getPropertyValue(prop);
-};
-
-getTimeString = function(seconds) {
-  // determine chunk values
-  let w = Math.floor(seconds / 604800);  // weeks
-  let d = Math.floor((seconds % 604800) / 86400) ;  // days
-  let h = Math.floor((seconds % 86400) / 3600);  // hours
-  let m = Math.floor((seconds % 3600) / 60);  // minutes
-  let s = Math.floor(seconds % 60);  // seconds
-
-  // now construct the string
-  var st = '';
-  if (w) {
-    st += w.toString() + 'w ';
-  }
-  if (d) {
-    st += d.toString() + 'd ';
-  }
-  if (h) {
-    st += h.toString() + 'h ';
-  }
-  if (m) {
-    st += m.toString() + 'm ';
-  }
-  if (s) {
-    st += s.toString() + 's ';
-  }
-  return st; 
-}
-
-isInside = function(item, array) {
-  for (var i = 0; i < array.length; i++) {
-    if (item == array[i]) {
-      return true;
-    }
-  }
-  return false;
-}
-
-getDistanceString = function(meters) {
-  let ly = Math.floor(meters / (299792458 * 3600 * 24 * 365));
-  let Mkm = Math.floor((meters % (299792458 * 3600 * 24 * 365)) / 1000000000);
-  let st = '';
-  if (ly) {
-    st += ly.toString() + ' Ly ';
-  }
-  st += Mkm.toString() + ' Million km';
-  return st;
-}
-
-var deltaT = DEFAULT_dT;
-var numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-var frame_rate = 60;
-
-resolveTimeStep = function (weeks_per_sec, calc_per_frame, frames_per_sec) {
-    return 604800 / calc_per_frame / frames_per_sec * weeks_per_sec
-  }
-
-
-
 class SolarSystem {
   constructor() {
     // initializing node
@@ -84,237 +22,66 @@ class SolarSystem {
 
     // set the time object
     this.date_holder = document.getElementById('date_holder');
-    this.start_date = new Date(this.data.sun.time);
     this.current_date = new Date(this.data.sun.time);
     this.current_time = this.data.sun.time;
-    this.date_label = 'Date: '
-    this.date_holder.innerHTML = this.date_label + this.start_date.toString();
+    this.date_holder.innerHTML = 'Date: ' + this.current_date.toString();
 
     // set the time info object
     this.time_info_holder = document.getElementById('time_info_holder');
-    this.kt_label = 'Time Step(s): '
-    this.cc_label = '<br />Steps per frame: '
-    this.dt_label = '<br />Time Per Frame: ';
-    this.fr_label = '<br />FPS: ';
-    this.tf_label = '<br />Time Factor: ';
-    this.ts_label = '<br />1 sec = ';
     frame_rate = 0;
     this.time_per_frame = 0;
-    this.time_per_frame_s = '';
     this.time_factor = 0;
-    this.time_factor_s = '';
     this.updateTime();
 
-    // set up the persepctive update
-    this.perspective_holder = document.getElementById('perspective_info');
-    this.p_label = 'Viewer Distance from Sun:<br />'
-    this.viewer_distance = 0;
-    this.perspective_holder.innerHTML = this.p_label;
-
     // populate all the bodies
-    this.bodies = {};
-    for (var key in data) {
-      console.log(key);
-      this.bodies[key] = new OrbitalBody(data[key], key);
-    }
-
-    // now add all the moons to their appropriate hosts
-    this.bodies.moon.host = this.bodies.earth;
-    this.bodies.io.host = this.bodies.jupiter;
-    this.bodies.europa.host = this.bodies.jupiter;
-    this.bodies.ganymede.host = this.bodies.jupiter;
-    this.bodies.callisto.host = this.bodies.jupiter;
-    this.bodies.titan.host = this.bodies.saturn;
-    this.bodies.triton.host = this.bodies.neptune;
-
-    // ray casting
-    this.mouse = {x: 0, y: 0};
-    this.select_mouse = {x: 0, y: 0};
-    this.raycaster = new THREE.Raycaster();
-    this.intersected = null;
-    this.selected = null;
-
-    // world elements
-    this.renderer = this.createRenderer();
-    this.scene = this.createScene();
-
-    // viewing
-    this.camera = this.createCamera();
-    this.light = this.createAmbientLight();
-    this.point_light = this.createPointLight();
+    this.bodies = createOrbitalBodies();
 
     // get the sun glow
-    this.sun_glow = this.createSunGlow();
+    this.sun_glow = createGlow(this.bodies.sun);
     this.bodies.sun.group.add(this.sun_glow)
+
+    // world elements
+    this.renderer = createRenderer(this.node);
+    this.scene = new THREE.Scene();
+
+    // viewing
+    this.camera = createCamera(this.node, this.bodies.sun.radius);
+    this.scene.add(this.camera);
+    this.scene.add(new THREE.AmbientLight(0xfafafa, 0.3));  // ambient light
+    // NOTE: if want to adjust scale might need to change this, like back to real for spaceship
+    this.scene.add(new THREE.PointLight(0xffffff, 1, 11000, 1));  // point light decays to 0 when past pluto
 
     // for planet tracking and camera and spotlight updating
     this.current_target = undefined;
     
      // additional setups
-    this.setUpControls();
+    this.trackball = setUpControls(this.camera, this.renderer);
+    this.trackball.target = this.bodies.sun.group.position;
     this.axes = new ThreeAxes(this.node, this.camera);
 
     // now add everything to the scene
-    // NOTE, ONLY CAN RECEIVE OR CAST SHADOWS, CANT DO BOTH, SO RIGHT NOW ITS PLANETS ON THE MOONS
     for (var i in this.bodies) {
-      if (SHADOWS_ENABLED) {
-        if (this.bodies[i].name == 'sun') {
-          this.bodies[i].body.castShadow = false;
-          this.bodies[i].body.receiveShadow = false;
-        } else if (this.bodies[i].host) {
-          this.bodies[i].body.castShadow = false;
-          this.bodies[i].body.receiveShadow = true;
-        } else {
-          this.bodies[i].body.castShadow = true;
-          this.bodies[i].body.receiveShadow = false;
-        }
-      }
       this.scene.add(this.bodies[i].group);
     }
-    this.createStars();
+
+    // add in the stars
+    this.stars = createStars();
+    for (let i in this.stars) {
+      this.scene.add(this.stars[i]);
+    }
 
     this.add_event_listeners();
 
+     // set up the persepctive update
+    this.perspective_holder = document.getElementById('perspective_info');
+    this.viewer_distance = 0;
     this.updatePerspective();
 
     // CREATING GUI SLIDERS
-    this.weeks_sec = 0.14;
-    this.gui = new dat.GUI();
-    var parameters = 
-    {time_scale : 0.14, color: "#ffff00" };  // time scaling units are in weeks
-    
-    var top = this.gui.addFolder('Time Scaling');
-    
-    var cGUI = 
-    top.add(parameters, 'time_scale' ).min(1.65 * Math.pow(10, -6)).max(52).step(0.01).name("Weeks/Sec").listen();
-    cGUI.onChange( function(value) { 
-      deltaT = resolveTimeStep(value, numberOfCalculationsPerFrame, frame_rate);
-    });
+    this.gui = setupGui();  // defined in setup
 
     console.log(this);
     this.run();
-  }
-
-
-  createRenderer() {
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(this.nodeWidth, this.nodeHeight);
-    renderer.setClearColor(0x000000, 0);
-    renderer.shadowMapEnabled = true;
-    this.node.appendChild(renderer.domElement);
-    return renderer;
-  }
-
-  createScene() {
-    // creates the scene
-    return new THREE.Scene();
-  }
-
-  createCamera() {
-    const camera = new THREE.PerspectiveCamera(50, this.nodeWidth / this.nodeHeight, 1, 10000000);
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.data.sun.radius * 0.75 / PLANET_SCALE);
-    camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    camera.lookAt(this.scene.position);
-    camera.visible = true;
-    //WE WANT Z TO BE THE UP AXIS IN GENERAL
-    camera.up = new THREE.Vector3(0, 0, 1);
-    this.scene.add(camera);
-    return camera;
-  }
-
-  createAmbientLight() {
-    const light = new THREE.AmbientLight(0xfafafa, 0.3);
-    this.scene.add(light);
-    return light;
-  }
-
-  createPointLight() {
-    var light = new THREE.PointLight(0xffffff, 1, 11000, 1);
-    light.position.set(0, 0, 0);
-    light.castShadow = true;
-    light.shadowDarkness = 0.7;
-    this.scene.add(light);
-    return light;
-  }
-
-  createSunGlow() {
-      //http://stemkoski.github.io/Three.js/Shader-Glow.html
-      const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
-      var customMaterial = new THREE.ShaderMaterial( 
-      {
-          uniforms: 
-        { 
-          "c":   { type: "f", value: 0.0 },
-          "p":   { type: "f", value: 2.0 },
-          glowColor: { type: "c", value: new THREE.Color(0xffff00) },
-          viewVector: { type: "v3", value: cameraPosition }
-        },
-        vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-        fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-        side: THREE.FrontSide,
-        blending: THREE.AdditiveBlending,
-        transparent: true
-      }   );
-        
-      var glow = new THREE.Mesh( this.bodies.sun.body.geometry.clone(), customMaterial.clone() );
-      glow.position.set(this.bodies.sun.group.position.x, this.bodies.sun.group.position.y, this.bodies.sun.group.position.z);
-      glow.scale.multiplyScalar(1.01);
-      this.scene.add(glow);
-      return glow;
-  }
-
-  createStars() {
-    var radius = 5000;
-    var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
-    for ( i = 0; i < 250; i ++ ) {
-      var vertex = new THREE.Vector3();
-      vertex.x = Math.random() * 2 - 1;
-      vertex.y = Math.random() * 2 - 1;
-      vertex.z = Math.random() * 2 - 1;
-      vertex.multiplyScalar( r );
-      starsGeometry[ 0 ].vertices.push( vertex );
-    }
-    for ( i = 0; i < 1500; i ++ ) {
-      var vertex = new THREE.Vector3();
-      vertex.x = Math.random() * 2 - 1;
-      vertex.y = Math.random() * 2 - 1;
-      vertex.z = Math.random() * 2 - 1;
-      vertex.multiplyScalar( r );
-      starsGeometry[ 1 ].vertices.push( vertex );
-    }
-    var stars;
-    var starsMaterials = [
-      new THREE.PointsMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
-      new THREE.PointsMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
-      new THREE.PointsMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
-      new THREE.PointsMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
-      new THREE.PointsMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
-      new THREE.PointsMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
-    ];
-    for ( i = 10; i < 30; i ++ ) {
-      stars = new THREE.Points( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
-      stars.rotation.x = Math.random() * 6;
-      stars.rotation.y = Math.random() * 6;
-      stars.rotation.z = Math.random() * 6;
-      stars.scale.setScalar( i * 10 );
-      stars.matrixAutoUpdate = false;
-      stars.updateMatrix();
-      this.scene.add(stars);
-    }
-  }
-
-  setUpControls() {
-    const trackball = new TrackballControls(this.camera, this.renderer.domElement);
-    trackball.rotateSpeed = TRACKBALL_DEFAULTS.rotateSpeed;
-    trackball.zoomSpeed = TRACKBALL_DEFAULTS.zoomSpeed;
-    trackball.panSpeed = TRACKBALL_DEFAULTS.panSpeed;
-    trackball.noZoom = TRACKBALL_DEFAULTS.noZoom;
-    trackball.noPan = TRACKBALL_DEFAULTS.noPan;
-    trackball.staticMoving = TRACKBALL_DEFAULTS.staticMoving;
-    trackball.dynamicDampingFactor = TRACKBALL_DEFAULTS.dynamicDampingFactor;
-
-    this.trackball = trackball;
   }
 
   updateAxCam() {
@@ -365,19 +132,6 @@ class SolarSystem {
     this.trackball.update();
   }
 
-  // get the gravitational acceleration contribution from another orbital body
-  get_acceleration_contribution(body1, body2) {
-    // this is the force of body 2 acting on body 1, and will update both vector wise
-    var separation_vector = new THREE.Vector3().subVectors(body2.position, body1.position);
-    var separation = separation_vector.length();
-    separation_vector.normalize();  // this is the direction of the force from body2 on body 1, so point at body 2
-    // console.log(separation);
-    var force = separation_vector.multiplyScalar(G * body1.mass * body2.mass / (separation * separation));
-    // now add the acceleration to the body accelerations accordingly
-    body1.acceleration.add(force.clone().multiplyScalar(1 / body1.mass));
-    body2.acceleration.sub(force.clone().multiplyScalar(1 / body2.mass));  // sub because force acts in other direction
-  }
-
   updateBodies() {
     // perform updating with delegated number of calculations per frame
     for (var k = 0; k < numberOfCalculationsPerFrame; k++) {
@@ -392,7 +146,7 @@ class SolarSystem {
         ct = 0;
         for (var key2 in this.bodies) {
           if (isInside(key2, tracking) == false) {
-            this.get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
+            get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
           } 
         }
       }
@@ -415,24 +169,22 @@ class SolarSystem {
 
   showDate() {
     this.current_date = new Date(this.current_time);
-    this.date_holder.innerHTML = this.date_label + this.current_date.toString();
+    this.date_holder.innerHTML = 'Date: ' + this.current_date.toString();
   }
 
   updateTime() {
     this.time_per_frame = numberOfCalculationsPerFrame * deltaT;  // in seconds, going to need to scale this later
-    this.time_per_frame_s = getTimeString(this.time_per_frame);
     this.time_factor = Math.floor(this.time_per_frame * frame_rate);
-    this.time_factor_s = getTimeString(this.time_factor);
-    this.time_info_holder.innerHTML = this.kt_label + Math.floor(deltaT).toString() + this.cc_label + 
-      numberOfCalculationsPerFrame.toString() + this.dt_label + this.time_per_frame_s + 
-      this.fr_label + frame_rate.toString() + this.tf_label + this.time_factor.toString() +
-      this.ts_label + this.time_factor_s;
+    this.time_info_holder.innerHTML = 'Time Step(s): ' + Math.floor(deltaT).toString() + '<br />Steps per frame: ' + 
+      numberOfCalculationsPerFrame.toString() + '<br />Time Per Frame: ' + getTimeString(this.time_per_frame) + 
+      '<br />FPS: ' + frame_rate.toString() + '<br />Time Factor: ' + this.time_factor.toString() +
+      '<br />1 sec = ' + getTimeString(this.time_factor);
   }
 
   updatePerspective() {
     this.viewer_distance = new THREE.Vector3().subVectors(this.camera.position.clone().multiplyScalar(DISTANCE_SCALE), 
       this.bodies.sun.position).length();
-    this.perspective_holder.innerHTML = this.p_label + getDistanceString(this.viewer_distance);
+    this.perspective_holder.innerHTML = 'Viewer Distance from Sun:<br />' + getDistanceString(this.viewer_distance);
   }
 
   // button interaction functions
@@ -550,7 +302,22 @@ class SolarSystem {
       this.updateDate();
       this.paused = true;
     }
-    console.log(deltaT);
+  }
+
+  onWindowResize() {
+    this.node.width = window.innerWidth;
+    this.node.height = window.innerHeight;
+    this.nodeWidth = window.innerWidth;
+    this.nodeHeight = window.innerHeight;
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(this.nodeWidth, this.nodeHeight);
+    this.axes.renderer.setSize(this.nodeWidth / SCENE_DEFAULTS.axes_shrink_factor, this.nodeHeight /
+     SCENE_DEFAULTS.axes_shrink_factor);
+
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
   add_event_listeners() {
@@ -615,22 +382,6 @@ class SolarSystem {
     document.getElementById('pause').onclick = this.onPause;
   }
 
-  onWindowResize() {
-    this.node.width = window.innerWidth;
-    this.node.height = window.innerHeight;
-    this.nodeWidth = window.innerWidth;
-    this.nodeHeight = window.innerHeight;
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(this.nodeWidth, this.nodeHeight);
-    this.axes.renderer.setSize(this.nodeWidth / SCENE_DEFAULTS.axes_shrink_factor, this.nodeHeight /
-     SCENE_DEFAULTS.axes_shrink_factor);
-
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-
-    this.renderer.setSize( window.innerWidth, window.innerHeight );
-  }
-
   run() {
     this.animate();
   }
@@ -641,8 +392,6 @@ class SolarSystem {
   }
 
   render() {
-    
-
     this.updateControls();
     this.updateAxCam();
     this.updateSunGlow();
