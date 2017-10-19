@@ -65,6 +65,8 @@ class SolarSystem {
     // body population info
     this.data = data;
 
+    this.paused = false;
+
     // number of calculations per second
     this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
     // The length of the time increment, in seconds.
@@ -142,12 +144,10 @@ class SolarSystem {
 
     // for planet tracking and camera and spotlight updating
     this.current_target = undefined;
-    this.camera_target = this.bodies.sun.group.position;
-
     
      // additional setups
     this.setUpControls();
-    this.axes = new ThreeAxes(document.getElementById("house"), this.camera);
+    this.axes = new ThreeAxes(this.node, this.camera);
 
     // now add everything to the scene
     // NOTE, ONLY CAN RECEIVE OR CAST SHADOWS, CANT DO BOTH, SO RIGHT NOW ITS PLANETS ON THE MOONS
@@ -243,7 +243,6 @@ class SolarSystem {
       return glow;
   }
 
-
   createStars() {
     var radius = 5000;
     var i, r = radius, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
@@ -310,7 +309,9 @@ class SolarSystem {
     
     if (!this.current_target.host) {
       var location = this.current_target.group.position.clone();
-      var dir = this.current_target.group.position.clone().normalize();
+      var dir = new THREE.Vector3().crossVectors(
+        new THREE.Vector3().subVectors(this.current_target.group.position, this.bodies.sun.group.position).normalize(), 
+        this.bodies.sun.up);
       if (this.current_target.name == 'pluto') {
         location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
         this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
@@ -318,18 +319,15 @@ class SolarSystem {
         location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
         this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
       }
-      this.camera.lookAt(this.bodies.sun.group.position);
-      this.camera_target = this.bodies.sun.group.position;
+      this.camera.lookAt(this.current_target.group.position);
     } else {
       var location = this.current_target.group.position.clone();
       var loc2 = this.current_target.host.group.position.clone();
       var separation_vector = new THREE.Vector3().subVectors(location, loc2);
-      // var separation = separation_vector.length();
       separation_vector.normalize();
       location.add(separation_vector.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
       this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
       this.camera.lookAt(this.current_target.host.group.position);
-      this.camera_target = this.current_target.host.group.position;
     }
   }
 
@@ -540,6 +538,22 @@ class SolarSystem {
      FRAMES_TO_ROTATE);
   }
 
+  onResetView() {
+    this.trackball.enabled = true;
+    this.current_target = undefined;
+    this.numberOfCalculationsPerFrame = DEFAULT_FRAMES;
+    this.trackball.reset();
+  }
+
+  onPause() {
+    if (this.paused) {
+      this.paused = false;
+    } else {
+      this.updateDate();
+      this.paused = true;
+    }
+  }
+
   add_event_listeners() {
     this.onWindowResize = this.onWindowResize.bind(this);
     window.addEventListener('resize', this.onWindowResize, false);
@@ -594,6 +608,12 @@ class SolarSystem {
 
     this.toPlutoView = this.toPlutoView.bind(this);
     document.getElementById('pluto_view').onclick = this.toPlutoView;
+
+    this.onResetView = this.onResetView.bind(this);
+    document.getElementById('reset_view').onclick = this.onResetView;
+
+    this.onPause = this.onPause.bind(this);
+    document.getElementById('pause').onclick = this.onPause;
   }
 
   onWindowResize() {
@@ -617,19 +637,19 @@ class SolarSystem {
   }
 
   animate() {
-    requestAnimationFrame(this.animate.bind(this));
-    // needs to be before because it needs to refer to the updated camera projection matrix from the
-    // prior round of calculations
-    // THIS IS VERY IMPORTANT TO KNOW, VISUAL STUFF NEEDS TO REFER TO THE LAST ROUND OF CALCULATIONS
-    // AT LEASET WITH CAMERA.LOOKAT()
+    requestAnimationFrame(this.animate.bind(this));    
+    this.render();
+  }
+
+  render() {
+    if (this.paused) {
+      return;
+    }
+    this.updateControls();
+    this.updateBodies();
     this.updateCamera();
     this.updateAxCam();
     this.updateSunGlow();
-    this.render();
-   
-    this.updateControls();
-    this.updateBodies();
-    // this.updateDate();  // remove this into update if things are too slow or burning too much energy, worried it is
 
     // time tracking
     this.frame_count += 1;
@@ -644,9 +664,7 @@ class SolarSystem {
       // update the viewer distance
       this.updatePerspective();
     }
-  }
 
-  render() {
     this.renderer.render(this.scene, this.camera);
     this.axes.renderer.render(this.axes.scene, this.axes.camera);
   }

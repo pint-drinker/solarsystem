@@ -17,7 +17,7 @@ const G = 6.67408 * Math.pow(10, -11);
 const TRACKBALL_DEFAULTS = {
 	rotateSpeed: 2.0,
     zoomSpeed: 2.0,
-    panSpeed: 0.15,
+    panSpeed: 2.0,
     noZoom: false,
     noPan: false,
     staticMoving: true,

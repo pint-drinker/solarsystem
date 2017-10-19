@@ -27,8 +27,12 @@
             }
             #minor_container {
                 position: relative;
-                /*top: 40px;*/
-                /*left: 5px;*/
+                height: 50px;
+                width: 100%;
+                background: transparent;
+            }
+            #controls {
+                position: relative;
                 height: 50px;
                 width: 100%;
                 background: transparent;
@@ -92,6 +96,13 @@
             .button1 {
                 background-color: #67D0F2;
             }
+            .button3 {
+                background-color: #F6C845
+            }
+            .button3:hover {
+                background-color: #ED6C24;
+                transition-duration: 0.4s;
+            }
             
         </style>
     </head>
@@ -118,6 +129,9 @@
                 <button class="button button2" id="callisto_view">Jupiter's Callisto</button>
                 <button class="button button2" id="titan_view">Saturn's Titan</button>
                 <button class="button button2" id="triton_view">Neptune's Triton</button>
+                <div id="controls">
+                    <button class="button button3" id="pause">Pause/Resume</button>
+                    <button class="button button3" id="reset_view">Reset View</button>
             </div>
         </div>
         <div id="date_holder">
