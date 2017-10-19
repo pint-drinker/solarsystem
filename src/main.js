@@ -106,13 +106,14 @@ class SolarSystem {
     this.viewer_distance = 0;
     this.perspective_holder.innerHTML = this.p_label;
 
-    // bodies
+    // populate all the bodies
     this.bodies = {};
     for (var key in data) {
       console.log(key);
       this.bodies[key] = new OrbitalBody(data[key], key);
     }
-    // now add to the moon the earth as its host
+
+    // now add all the moons to their appropriate hosts
     this.bodies.moon.host = this.bodies.earth;
     this.bodies.io.host = this.bodies.jupiter;
     this.bodies.europa.host = this.bodies.jupiter;
@@ -275,16 +276,28 @@ class SolarSystem {
       return;
     }
     
-    var location = this.current_target.group.position.clone();
-    var dir = this.current_target.group.position.clone().normalize();
-    if (this.current_target.name == 'pluto') {
-      location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
-      this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
+    if (!this.current_target.host) {
+      var location = this.current_target.group.position.clone();
+      var dir = this.current_target.group.position.clone().normalize();
+      if (this.current_target.name == 'pluto') {
+        location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
+        this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
+      } else {
+        location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
+        this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
+      }
+      this.camera.lookAt(this.bodies.sun.group.position);
     } else {
-      location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
+      var location = this.current_target.group.position.clone();
+      var loc2 = this.current_target.host.group.position.clone();
+      var separation_vector = new THREE.Vector3().subVectors(location, loc2);
+      // var separation = separation_vector.length();
+      separation_vector.normalize();
+      location.add(separation_vector.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
       this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
+      this.camera.lookAt(this.current_target.host.group.position);
     }
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    
   }
 
   updateControls() {
@@ -385,6 +398,7 @@ class SolarSystem {
     this.current_target = this.bodies.moon;
     this.numberOfCalculationsPerFrame = Math.ceil(2 * Math.PI / this.current_target.host.omega / this.deltaT /
      FRAMES_TO_ROTATE);
+    console.log(this.current_target.host.name);
   }
 
   toSunView() {
@@ -522,8 +536,12 @@ class SolarSystem {
 
   animate() {
     requestAnimationFrame(this.animate.bind(this));
-    this.render();
+    // needs to be before because it needs to refer to the updated camera projection matrix from the
+    // prior round of calculations
+    // THIS IS VERY IMPORTANT TO KNOW, VISUAL STUFF NEEDS TO REFER TO THE LAST ROUND OF CALCULATIONS
+    // AT LEASET WITH CAMERA.LOOKAT()
     this.updateCamera();
+    this.render();
     this.updateSpotlight();
     this.updateAxCam();
     this.updateControls();
