@@ -1,3 +1,8 @@
+
+var loaded_bodies = [];
+
+var NUM_BODIES = 17;
+
 class OrbitalBody {
 	constructor(obj, name) {
 		this.name = name;
@@ -39,13 +44,15 @@ class OrbitalBody {
 	}
 
 	create(name, radius) {
+		loaded_bodies.push(name);
+		var loader = new THREE.TextureLoader();
 		if (name == 'earth') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map		: THREE.ImageUtils.loadTexture('images/earthmap1k.jpg'),
-				bumpMap		: THREE.ImageUtils.loadTexture('images/earthbump1k.jpg'),
+				map		: loader.load('images/earthmap1k.jpg'),
+				bumpMap		: loader.load('images/earthbump1k.jpg'),
 				bumpScale	: 0.05,
-				specularMap	: THREE.ImageUtils.loadTexture('images/earthspec1k.jpg'),
+				specularMap	: loader.load('images/earthspec1k.jpg'),
 				specular	: new THREE.Color('grey'),
 				shininess: 0
 			})
@@ -53,7 +60,7 @@ class OrbitalBody {
 			return mesh	
 		} else if (name == 'sun') {
 			var geometry	= new THREE.SphereGeometry(radius / SUN_SCALE * 1.5, 32, 32)
-			var texture	= THREE.ImageUtils.loadTexture('images/sunmap.jpg')
+			var texture	= loader.load('images/sunmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
 				bumpMap	: texture,
@@ -66,8 +73,8 @@ class OrbitalBody {
 		} else if (name == 'mars') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/marsmap1k.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/marsbump1k.jpg'),
+				map	: loader.load('images/marsmap1k.jpg'),
+				bumpMap	: loader.load('images/marsbump1k.jpg'),
 				bumpScale: 0.05,
 				shininess: 0
 			})
@@ -76,8 +83,8 @@ class OrbitalBody {
 		} else if (name == 'mercury') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/mercurymap.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/mercurybump.jpg'),
+				map	: loader.load('images/mercurymap.jpg'),
+				bumpMap	: loader.load('images/mercurybump.jpg'),
 				bumpScale: 0.005,
 				shininess: 0
 			})
@@ -86,8 +93,8 @@ class OrbitalBody {
 		} else if (name == 'venus') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/venusmap.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/venusbump.jpg'),
+				map	: loader.load('images/venusmap.jpg'),
+				bumpMap	: loader.load('images/venusbump.jpg'),
 				bumpScale: 0.005,
 				shininess: 0
 			})
@@ -95,7 +102,7 @@ class OrbitalBody {
 			return mesh
 		} else if (name == 'jupiter') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
-			var texture	= THREE.ImageUtils.loadTexture('images/jupitermap.jpg')
+			var texture	= loader.load('images/jupitermap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
 				bumpMap	: texture,
@@ -106,7 +113,7 @@ class OrbitalBody {
 			return mesh	
 		} else if (name == 'saturn') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
-			var texture	= THREE.ImageUtils.loadTexture('images/saturnmap.jpg')
+			var texture	= loader.load('images/saturnmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
 				bumpMap	: texture,
@@ -117,7 +124,7 @@ class OrbitalBody {
 			return mesh
 		} else if (name == 'uranus') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
-			var texture	= THREE.ImageUtils.loadTexture('images/uranusmap.jpg')
+			var texture	= loader.load('images/uranusmap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
 				bumpMap	: texture,
@@ -128,7 +135,7 @@ class OrbitalBody {
 			return mesh
 		} else if (name == 'neptune') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
-			var texture	= THREE.ImageUtils.loadTexture('images/neptunemap.jpg')
+			var texture	= loader.load('images/neptunemap.jpg')
 			var material	= new THREE.MeshPhongMaterial({
 				map	: texture,
 				bumpMap	: texture,
@@ -140,8 +147,8 @@ class OrbitalBody {
 		} else if (name == 'pluto') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE * 10, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/plutomap1k.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/plutobump1k.jpg'),
+				map	: loader.load('images/plutomap1k.jpg'),
+				bumpMap	: loader.load('images/plutobump1k.jpg'),
 				bumpScale: 0.005,
 				shininess: 0
 			})
@@ -150,8 +157,8 @@ class OrbitalBody {
 		} else if (name == 'moon') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/moonmap1k.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/moonbump1k.jpg'),
+				map	: loader.load('images/moonmap1k.jpg'),
+				bumpMap	: loader.load('images/moonbump1k.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -160,8 +167,8 @@ class OrbitalBody {
 		} else if (name == 'titan') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/titanmap.png'),
+				map	: loader.load('images/titanmap.png'),
+				bumpMap	: loader.load('images/titanmap.png'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -170,8 +177,8 @@ class OrbitalBody {
 		} else if (name == 'triton') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/triton.jpg'),
+				map	: loader.load('images/triton.jpg'),
+				bumpMap	: loader.load('images/triton.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -180,8 +187,8 @@ class OrbitalBody {
 		} else if (name == 'ganymede') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/ganymede.jpg'),
+				map	: loader.load('images/ganymede.jpg'),
+				bumpMap	: loader.load('images/ganymede.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -190,8 +197,8 @@ class OrbitalBody {
 		} else if (name == 'callisto') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/callisto.jpg'),
+				map	: loader.load('images/callisto.jpg'),
+				bumpMap	: loader.load('images/callisto.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -200,8 +207,8 @@ class OrbitalBody {
 		} else if (name == 'europa') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/europa.jpg'),
+				map	: loader.load('images/europa.jpg'),
+				bumpMap	: loader.load('images/europa.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -210,8 +217,8 @@ class OrbitalBody {
 		} else if (name == 'io') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
 			var material	= new THREE.MeshPhongMaterial({
-				map	: THREE.ImageUtils.loadTexture('images/io.jpg'),
-				bumpMap	: THREE.ImageUtils.loadTexture('images/io.jpg'),
+				map	: loader.load('images/io.jpg'),
+				bumpMap	: loader.load('images/io.jpg'),
 				bumpScale: 0.002,
 				shininess: 0
 			})
@@ -227,6 +234,7 @@ class OrbitalBody {
 
 	create_rings(name) {
 		if (name == 'saturn') {
+			loaded_bodies.push[name];
 			// create destination canvas
 			var canvasResult	= document.createElement('canvas')
 			canvasResult.width	= 915

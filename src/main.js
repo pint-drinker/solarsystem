@@ -1,5 +1,6 @@
 
 // need the variables to be global, its so annoying because i dont know how to deal with scope
+var started = false;
 var paused;
 var tweening_rot;
 var tweening_tran;
@@ -8,7 +9,7 @@ var current_target;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
-  trackball.target = current_target.group.position;
+  trackball.target = current_target.group.position;  
   tweening_rot = false;
 }
 
@@ -69,7 +70,7 @@ class SolarSystem {
     this.scene.add(new THREE.PointLight(0xffffff, 1, 11000, 1));  // point light decays to 0 when past pluto
 
     // for planet tracking and camera and spotlight updating
-    current_target = undefined;
+    current_target = this.bodies.sun.group.position;
     
      // additional setups
     trackball = setUpControls(this.camera, this.renderer);
@@ -195,6 +196,8 @@ class SolarSystem {
       deltaT = 2 * Math.PI / current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
     } else {
       if (body.name == 'mercury') {
+        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 10;
+      } else if (body.name == 'venus') {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
       } else {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
@@ -208,6 +211,13 @@ class SolarSystem {
     dummy.lookAt(current_target.group.position.clone());
     this.makeToTween(getCameraOffsetDestination(current_target, this.bodies.sun), dummy.rotation.clone());
     this.setPlanetDeltaT(current_target);
+  }
+
+  onAllLoaded() {
+    tweening_tran = true;
+    var pos2 = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
+    var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 5000)
+    .easing(TWEEN.Easing.Linear.None).onComplete(onTweeningTranComplete).start();
   }
 
   // button interaction functions
@@ -293,7 +303,7 @@ class SolarSystem {
 
   onResetView() {
     trackball.target = this.bodies.sun.group.position;
-    current_target = undefined;
+    current_target = this.bodies.sun;
     deltaT = DEFAULT_dT;
     trackball.reset();
   }
@@ -401,9 +411,15 @@ class SolarSystem {
     this.updateAxCam();
     this.updateSunGlow();
 
-    if (!paused  && !tweening_tran) {
+    if (!paused  && !tweening_tran && started) {
       this.updateBodies();
       this.updateDate();
+    }
+
+    if (loaded_bodies.length == 17 && !started) {
+      console.log('yeah')
+      started = true;
+      this.onAllLoaded();
     }
 
     // time tracking

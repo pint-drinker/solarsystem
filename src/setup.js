@@ -5,14 +5,13 @@ createRenderer = function(node) {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(node.width, node.height);
     renderer.setClearColor(0x000000, 0);
-    renderer.shadowMapEnabled = true;
     node.appendChild(renderer.domElement);
     return renderer;
 }
 
 createCamera = function(node, radius) {
     const camera = new THREE.PerspectiveCamera(50, node.width / node.height, 1, 10000000);
-    const cameraPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(radius * 0.75 / PLANET_SCALE);
+    const cameraPosition = new THREE.Vector3(13000, 13000, 13000);
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     //WE WANT Z TO BE THE UP AXIS IN GENERAL
     camera.up = new THREE.Vector3(0, 0, 1);

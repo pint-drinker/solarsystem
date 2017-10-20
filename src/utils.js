@@ -84,10 +84,10 @@ getCameraOffsetDestination = function(ob, sun) {
     if (ob.name == 'pluto') {
       location.add(dir.multiplyScalar(ob.radius * 100 / PLANET_SCALE));
       location.z += ob.radius * 20 / PLANET_SCALE
-    } else if {ob.name == 'mercury'
-
-    } 
-    else {
+    } else if (ob.name == 'mercury') {
+      location.add(dir.multiplyScalar(ob.radius * 20 / PLANET_SCALE));
+      location.z += ob.radius * 5 / PLANET_SCALE
+    } else {
       location.add(dir.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
       location.z += ob.radius * 2 / PLANET_SCALE
     }
@@ -96,7 +96,7 @@ getCameraOffsetDestination = function(ob, sun) {
     var loc2 = ob.host.group.position.clone();
     var separation_vector = new THREE.Vector3().subVectors(location, loc2);
     separation_vector.normalize();
-    location.add(separation_vector.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
+    location.add(separation_vector.multiplyScalar(ob.radius * 12 / PLANET_SCALE));
     location.z += ob.radius * 2 / PLANET_SCALE;
   }
   return location;
