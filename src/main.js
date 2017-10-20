@@ -1,5 +1,20 @@
 
-var ct = 0;
+// need the variables to be global, its so annoying because i dont know how to deal with scope
+var paused;
+var tweening_rot;
+var tweening_tran;
+var trackball;
+var current_target;
+
+function onTweeningRotComplete() {
+  trackball.enabled = true;
+  trackball.target = current_target.group.position;
+  tweening_rot = false;
+}
+
+function onTweeningTranComplete() {
+  tweening_tran = false;
+}
 
 class SolarSystem {
   constructor() {
@@ -13,7 +28,9 @@ class SolarSystem {
     // body population info
     this.data = data;
 
-    this.paused = false;
+    paused = false;
+    tweening_rot = false;
+    tweening_tran = false;
 
     // time and text tracking
     this.frame_count = 0;
@@ -52,11 +69,11 @@ class SolarSystem {
     this.scene.add(new THREE.PointLight(0xffffff, 1, 11000, 1));  // point light decays to 0 when past pluto
 
     // for planet tracking and camera and spotlight updating
-    this.current_target = undefined;
+    current_target = undefined;
     
      // additional setups
-    this.trackball = setUpControls(this.camera, this.renderer);
-    this.trackball.target = this.bodies.sun.group.position;
+    trackball = setUpControls(this.camera, this.renderer);
+    trackball.target = this.bodies.sun.group.position;
     this.axes = new ThreeAxes(this.node, this.camera);
 
     // now add everything to the scene
@@ -80,43 +97,17 @@ class SolarSystem {
     // CREATING GUI SLIDERS
     this.gui = setupGui();  // defined in setup
 
+    this.tweening = false;
+    this.dummy_body = new THREE.Object3D();
+
     console.log(this);
     this.run();
   }
 
   updateAxCam() {
-    this.axes.camera.position.subVectors(this.camera.position, this.trackball.target);
+    this.axes.camera.position.subVectors(this.camera.position, trackball.target);
     this.axes.camera.position.setLength(SCENE_DEFAULTS.cam_distance);
     this.axes.camera.lookAt(this.axes.scene.position);
-  }
-
-  updateCamera() {
-    if (!this.current_target) {
-      return;
-    }
-    
-    if (!this.current_target.host) {
-      var location = this.current_target.group.position.clone();
-      var dir = new THREE.Vector3().crossVectors(
-        new THREE.Vector3().subVectors(this.current_target.group.position, this.bodies.sun.group.position).normalize(), 
-        this.bodies.sun.up);
-      if (this.current_target.name == 'pluto') {
-        location.add(dir.multiplyScalar(this.current_target.radius * 100 / PLANET_SCALE));
-        this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 20 / PLANET_SCALE);
-      } else {
-        location.add(dir.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
-        this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
-      }
-      this.camera.lookAt(this.current_target.group.position);
-    } else {
-      var location = this.current_target.group.position.clone();
-      var loc2 = this.current_target.host.group.position.clone();
-      var separation_vector = new THREE.Vector3().subVectors(location, loc2);
-      separation_vector.normalize();
-      location.add(separation_vector.multiplyScalar(this.current_target.radius * 8 / PLANET_SCALE));
-      this.camera.position.set(location.x, location.y, location.z + this.current_target.radius * 2 / PLANET_SCALE);
-      this.camera.lookAt(this.current_target.host.group.position);
-    }
   }
 
   updateSunGlow() {
@@ -124,12 +115,12 @@ class SolarSystem {
   }
 
   updateControls() {
-    if (this.current_target || this.paused) {
-      this.trackball.noPan = true;
+    if (current_target || paused) {
+      trackball.noPan = true;
     } else {
-      this.trackball.noPan = false;
+      trackball.noPan = false;
     }
-    this.trackball.update();
+    trackball.update();
   }
 
   updateBodies() {
@@ -143,7 +134,6 @@ class SolarSystem {
       var tracking = [];
       for (var key1 in this.bodies) {
         tracking.push(key1);
-        ct = 0;
         for (var key2 in this.bodies) {
           if (isInside(key2, tracking) == false) {
             get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
@@ -162,8 +152,8 @@ class SolarSystem {
     }
   }
 
-  // DOUBLE CHECK THIS IS NOT OVER COUNTING BY ONE FRAME
   updateDate() {
+    // DOUBLE CHECK THIS IS NOT OVER COUNTING BY ONE FRAME
     this.current_time += numberOfCalculationsPerFrame * deltaT * Math.pow(10, 3);
   }
 
@@ -187,120 +177,133 @@ class SolarSystem {
     this.perspective_holder.innerHTML = 'Viewer Distance from Sun:<br />' + getDistanceString(this.viewer_distance);
   }
 
-  // button interaction functions
-  toSunView() {
-    this.onResetView();
+  makeToTween(pos2, rot2) {
+    tweening_rot = true;
+    tweening_tran = true;
+    trackball.enabled = false;
+    var tween_rot = new TWEEN.Tween(this.camera.rotation).to({x: rot2.x, y: rot2.y, z: rot2.z}, 500)
+    .easing(TWEEN.Easing.Linear.None).onComplete(onTweeningRotComplete);
+    var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 2000)
+    .easing(TWEEN.Easing.Linear.None).onComplete(onTweeningTranComplete);
+
+    tween_rot.chain(tween_tran);
+    tween_rot.start();
   }
 
+  setPlanetDeltaT(body) {
+    if (body.host) {
+      deltaT = 2 * Math.PI / current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    } else {
+      if (body.name == 'mercury') {
+        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
+      } else {
+        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+      }
+    }
+  }
+
+  bodyView() {
+    // now need to define the tween parameters, use a dummy copy camera to get the final position we want
+    var dummy = this.camera.clone();
+    dummy.lookAt(current_target.group.position.clone());
+    this.makeToTween(getCameraOffsetDestination(current_target, this.bodies.sun), dummy.rotation.clone());
+    this.setPlanetDeltaT(current_target);
+  }
+
+  // button interaction functions
   toEarthView() {
-    this.current_target = this.bodies.earth;
-    this.trackball.target = this.bodies.earth.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.earth;
+    this.bodyView();
   }
 
   toMoonView() {
-    this.trackball.target = this.bodies.moon.group.position;
-    this.current_target = this.bodies.moon;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.moon;
+    this.bodyView();
   }
 
   toMercuryView() {
-    this.current_target = this.bodies.mercury;
-    this.trackball.target = this.bodies.mercury.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
+    current_target = this.bodies.mercury;
+    this.bodyView();
   }
 
   toVenusView() {
-    this.current_target = this.bodies.venus;
-    this.trackball.target = this.bodies.venus.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.venus;
+    this.bodyView();
   }
 
   toMarsView() {
-    this.current_target = this.bodies.mars;
-    this.trackball.target = this.bodies.mars.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.mars;
+    this.bodyView();
   }
 
   toJupiterView() {
-    this.current_target = this.bodies.jupiter;
-    this.trackball.target = this.bodies.jupiter.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.jupiter;
+    this.bodyView();
   }
 
   toIoView() {
-    this.trackball.target = this.bodies.io.group.position;
-    this.current_target = this.bodies.io;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.io;
+    this.bodyView();
   }
 
   toEuropaView() {
-    this.trackball.target = this.bodies.europa.group.position;
-    this.current_target = this.bodies.europa;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.europa;
+    this.bodyView();
   }
 
   toGanymedeView() {
-    this.trackball.target = this.bodies.ganymede.group.position;
-    this.current_target = this.bodies.ganymede;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.ganymede;
+    this.bodyView();
   }
 
   toCallistoView() {
-    this.trackball.target = this.bodies.callisto.group.position;
-    this.current_target = this.bodies.callisto;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.callisto;
+    this.bodyView();
   }
 
   toSaturnView() {
-    this.current_target = this.bodies.saturn;
-    this.trackball.target = this.bodies.saturn.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.saturn;
+    this.bodyView();
   }
 
   toTitanView() {
-    this.trackball.target = this.bodies.titan.group.position;
-    this.current_target = this.bodies.titan;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.titan;
+    this.bodyView();
   }
 
   toUranusView() {
-    this.current_target = this.bodies.uranus;
-    this.trackball.target = this.bodies.uranus.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.uranus;
+    this.bodyView();
   }
 
   toNeptuneView() {
-    this.current_target = this.bodies.neptune;
-    this.trackball.target = this.bodies.neptune.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.neptune;
+    this.bodyView();
   }
 
   toTritonView() {
-    this.trackball.target = this.bodies.triton.group.position;
-    this.current_target = this.bodies.triton;
-    deltaT = 2 * Math.PI / this.current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.triton;
+    this.bodyView();
   }
 
   toPlutoView() {
-    this.current_target = this.bodies.pluto;
-    this.trackball.target = this.bodies.pluto.group.position;
-    deltaT = 2 * Math.PI / this.current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
+    current_target = this.bodies.pluto;
+    this.bodyView();
   }
 
   onResetView() {
-    this.trackball.target = this.bodies.sun.group.position;
-    this.current_target = undefined;
+    trackball.target = this.bodies.sun.group.position;
+    current_target = undefined;
     deltaT = DEFAULT_dT;
-    this.trackball.reset();
+    trackball.reset();
   }
 
   onPause() {
-    if (this.paused) {
-      this.paused = false;
+    if (paused) {
+      paused = false;
     } else {
       this.updateDate();
-      this.paused = true;
+      paused = true;
     }
   }
 
@@ -324,8 +327,8 @@ class SolarSystem {
     this.onWindowResize = this.onWindowResize.bind(this);
     window.addEventListener('resize', this.onWindowResize, false);
 
-    this.toSunView = this.toSunView.bind(this);
-    document.getElementById('sun_view').onclick = this.toSunView;
+    this.onResetView = this.onResetView.bind(this);
+    document.getElementById('sun_view').onclick = this.onResetView;
 
     this.toEarthView = this.toEarthView.bind(this);
     document.getElementById('earth_view').onclick = this.toEarthView;
@@ -375,7 +378,6 @@ class SolarSystem {
     this.toPlutoView = this.toPlutoView.bind(this);
     document.getElementById('pluto_view').onclick = this.toPlutoView;
 
-    this.onResetView = this.onResetView.bind(this);
     document.getElementById('reset_view').onclick = this.onResetView;
 
     this.onPause = this.onPause.bind(this);
@@ -392,11 +394,14 @@ class SolarSystem {
   }
 
   render() {
-    this.updateControls();
+    TWEEN.update();
+    if (!tweening_rot) {
+      this.updateControls();
+    }
     this.updateAxCam();
     this.updateSunGlow();
 
-    if (!this.paused) {
+    if (!paused  && !tweening_tran) {
       this.updateBodies();
       this.updateDate();
     }

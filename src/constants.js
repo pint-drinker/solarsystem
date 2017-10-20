@@ -9,7 +9,7 @@ const MOON_FAC = 12;
 const FRAMES_TO_ROTATE = 60;
 const DEFAULT_FRAMES = 100;
 const DEFAULT_dT = 3600 * 24 / 100;
-const DEFAULT_UPDATE_TIME = 1000;  // update text every second, or 1000 milliseconds
+const DEFAULT_UPDATE_TIME = 500;  // update text every second, or 1000 milliseconds
 
 const SHADOWS_ENABLED = false;
 

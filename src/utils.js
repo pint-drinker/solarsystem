@@ -74,4 +74,58 @@ get_acceleration_contribution = function(body1, body2) {
     body2.acceleration.sub(force.clone().multiplyScalar(1 / body2.mass));  // sub because force acts in other direction
 }
 
+getCameraOffsetDestination = function(ob, sun) {
+  // will output the final camera destination based on the orbital body input, will be different for moons and planets
+  if (!ob.host) {
+    var location = ob.group.position.clone();
+    var dir = new THREE.Vector3().crossVectors(
+      new THREE.Vector3().subVectors(ob.group.position, sun.group.position).normalize(), 
+      sun.up);
+    if (ob.name == 'pluto') {
+      location.add(dir.multiplyScalar(ob.radius * 100 / PLANET_SCALE));
+      location.z += ob.radius * 20 / PLANET_SCALE
+    } else if {ob.name == 'mercury'
+
+    } 
+    else {
+      location.add(dir.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
+      location.z += ob.radius * 2 / PLANET_SCALE
+    }
+  } else {
+    var location = ob.group.position.clone();
+    var loc2 = ob.host.group.position.clone();
+    var separation_vector = new THREE.Vector3().subVectors(location, loc2);
+    separation_vector.normalize();
+    location.add(separation_vector.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
+    location.z += ob.radius * 2 / PLANET_SCALE;
+  }
+  return location;
+}
+
+getCameraObliqueDestination = function(ob, pos) {
+  if (!ob.host) {
+    var location = ob.group.position.clone();
+    var dir = new THREE.Vector3().crossVectors(
+      new THREE.Vector3().subVectors(ob.group.position, sun.group.position).normalize(), 
+      sun.up);
+    if (ob.name == 'pluto') {
+      location.add(dir.multiplyScalar(ob.radius * 100 / PLANET_SCALE));
+      location.z += ob.radius * 20 / PLANET_SCALE
+    } else {
+      location.add(dir.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
+      location.z += ob.radius * 2 / PLANET_SCALE
+    }
+  } else {
+    var location = ob.group.position.clone();
+    var loc2 = ob.host.group.position.clone();
+    var separation_vector = new THREE.Vector3().subVectors(location, loc2);
+    separation_vector.normalize();
+    location.add(separation_vector.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
+    location.z += ob.radius * 2 / PLANET_SCALE;
+  }
+  return location;
+
+}
+
+
 
