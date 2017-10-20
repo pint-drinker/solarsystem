@@ -217,7 +217,7 @@ class SolarSystem {
     tweening_tran = true;
     var pos2 = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
     var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 5000)
-    .easing(TWEEN.Easing.Linear.None).onComplete(onTweeningTranComplete).start();
+    .easing(TWEEN.Easing.Quadratic.In).onComplete(onTweeningTranComplete).start();
   }
 
   // button interaction functions
@@ -302,10 +302,9 @@ class SolarSystem {
   }
 
   onResetView() {
-    trackball.target = this.bodies.sun.group.position;
     current_target = this.bodies.sun;
+    this.bodyView();
     deltaT = DEFAULT_dT;
-    trackball.reset();
   }
 
   onPause() {
@@ -417,7 +416,6 @@ class SolarSystem {
     }
 
     if (loaded_bodies.length == 17 && !started) {
-      console.log('yeah')
       started = true;
       this.onAllLoaded();
     }

@@ -77,6 +77,9 @@ get_acceleration_contribution = function(body1, body2) {
 getCameraOffsetDestination = function(ob, sun) {
   // will output the final camera destination based on the orbital body input, will be different for moons and planets
   if (!ob.host) {
+    if (ob.name == 'sun') {
+      return new THREE.Vector3(1, 1, 1).multiplyScalar(ob.radius * 0.75 / PLANET_SCALE);
+    }
     var location = ob.group.position.clone();
     var dir = new THREE.Vector3().crossVectors(
       new THREE.Vector3().subVectors(ob.group.position, sun.group.position).normalize(), 
