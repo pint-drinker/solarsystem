@@ -6,6 +6,8 @@ var tweening_rot;
 var tweening_tran;
 var trackball;
 var current_target;
+var scene = new THREE.Scene();
+var hermes;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
@@ -60,7 +62,17 @@ class SolarSystem {
 
     // world elements
     this.renderer = createRenderer(this.node);
-    this.scene = new THREE.Scene();
+
+    var loader = new THREE.TDSLoader( );
+    loader.load( 'library/Hermes.3ds', function ( object ) {
+          const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(696300000 * 0.75 / PLANET_SCALE);
+          hermes = object;
+          console.log(hermes);
+          hermes.scale.set(0.1, 0.1, 0.1);
+          hermes.position.set(pos.x, pos.y, pos.z);
+          scene.add( hermes );
+    });
+    this.scene = scene;
 
     // viewing
     this.camera = createCamera(this.node, this.bodies.sun.radius);

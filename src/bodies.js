@@ -332,6 +332,118 @@ class OrbitalBody {
 	}
 }
 
+
+class SpaceShip {
+	constructor(group, position, velocity) {
+		this.name = 'hermes';
+		this.group = group;
+		
+		this.position = position;
+		this.velocity = velocity;
+		this.acceleration = new THREE.Vector3();
+
+		this.mass = 1000000;  // one million pounds
+		this.length = 300; // meters
+		this.radius = 25;  // average radius
+
+		this.I_yaw = 1/12 * this.mass * this.length * this.length;
+		this.I_pitch = this.I_yaw;
+		this.I_roll = 1/2 * this.mass * this.radius * this.radius;
+
+		this.booster_thrust = 1000000 * 4.44822;
+		this.brake_thrust = 500000 * 4.44822
+		this.roll_torque = 1000000 * 4.44822;
+		this.yaw_torque = 1000000 * 4.44822;
+		this.pitch_torque = 1000000 * 4.44822;
+
+		this.burn = {booster: false, brake: false, roll_left: false, roll_right: false, yaw_left: false, yaw_right: false, 
+			pitch_up: false, pitch_down: false};
+
+		this.host = undefined;
+
+
+		this.handleEvent = function ( event ) {
+
+		if ( typeof this[ event.type ] == 'function' ) {
+
+			this[ event.type ]( event );
+
+		}
+
+	};
+
+	this.keydown = function( event ) {
+
+		if ( event.altKey ) {
+			return;
+		}
+		switch ( event.keyCode ) {
+
+			case 16: /* shift */ this.burn.brake = true; break;
+			case 32: /* space */ this.burn.booster = true; break;
+
+			// case 87: /*W*/ this.moveState.forward = 1; break;
+			// case 83: /*S*/ this.moveState.back = 1; break;
+
+			// case 65: /*A*/ this.moveState.left = 1; break;
+			// case 68: /*D*/ this.moveState.right = 1; break;
+
+			// case 82: /*R*/ this.moveState.up = 1; break;
+			// case 70: /*F*/ this.moveState.down = 1; break;
+
+			// case 38: up this.moveState.pitchUp = 1; break;
+			// case 40: /*down*/ this.moveState.pitchDown = 1; break;
+
+			// case 37: /*left*/ this.moveState.yawLeft = 1; break;
+			// case 39: /*right*/ this.moveState.yawRight = 1; break;
+
+			// case 81: /*Q*/ this.moveState.rollLeft = 1; break;
+			// case 69: /*E*/ this.moveState.rollRight = 1; break;
+
+		}
+
+		// this.updateMovementVector();
+		// this.updateRotationVector();
+
+	};
+
+	this.keyup = function( event ) {
+
+		switch ( event.keyCode ) {
+
+			case 32: /* space */ this.burn.booster = false; break;
+			case 16: /* shift */ this.burn.brake = false; break;
+
+			// case 87: /*W*/ this.moveState.forward = 0; break;
+			// case 83: /*S*/ this.moveState.back = 0; break;
+
+			// case 65: /*A*/ this.moveState.left = 0; break;
+			// case 68: /*D*/ this.moveState.right = 0; break;
+
+			// case 82: /*R*/ this.moveState.up = 0; break;
+			// case 70: /*F*/ this.moveState.down = 0; break;
+
+			// case 38: up this.moveState.pitchUp = 0; break;
+			// case 40: /*down*/ this.moveState.pitchDown = 0; break;
+
+			// case 37: /*left*/ this.moveState.yawLeft = 0; break;
+			// case 39: /*right*/ this.moveState.yawRight = 0; break;
+
+			// case 81: /*Q*/ this.moveState.rollLeft = 0; break;
+			// case 69: /*E*/ this.moveState.rollRight = 0; break;
+
+		}
+
+		// this.updateMovementVector();
+		// this.updateRotationVector();
+
+	};
+
+	
+	}
+}
+
+
 // from http://jeromeetienne.github.io/threex.planets/examples/select.html#Saturn
 RingGeometry = function ( innerRadius, outerRadius, thetaSegments ) {
 
