@@ -411,10 +411,6 @@ class SpaceShip {
 
 		this.host = undefined;
 
-		// var quaternion = new THREE.Quaternion(); // create one and reuse it
-		// var vec = this.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
-		// quaternion.setFromUnitVectors( v1, v2 );
-
 		this.pointer = new THREE.Vector3(1, 0, 0);
 
 		this.move_body();
