@@ -17,4 +17,4 @@ Solar System Animator
 
 ### Want to see it? ###
 
-* https://bitbucket.org/dwensberg/solarsystem/src/index.html
+* http://htmlpreview.github.io/?https://github.com/dwensberg/solarsystem/blob/master/src/index.html
