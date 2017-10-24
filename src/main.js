@@ -8,11 +8,15 @@ var trackball;
 var current_target;
 var scene = new THREE.Scene();
 var hermes;
-var scope;
+var cockpit_view = false;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
-  trackball.target = current_target.group.position;  
+  if (current_target.name == 'h') {
+    trackball.target = current_target.center;
+  } else {
+    trackball.target = current_target.group.position;  
+  }
   tweening_rot = false;
 }
 
@@ -22,7 +26,6 @@ function onTweeningTranComplete() {
 
 class SolarSystem {
   constructor() {
-    var scope = this;
     // initializing node
     this.node = document.getElementById("house");
     this.node.width = window.innerWidth;
@@ -70,9 +73,19 @@ class SolarSystem {
     loader.load( 'library/Hermes.3ds', function ( object ) {
           var obj = data.earth;
           var pos = new THREE.Vector3(obj.position[0]*1.5, obj.position[1], obj.position[2]);
-          var v = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2])
-          hermes = new SpaceShip(object, pos, v);
-          hermes.group.scale.set(0.1, 0.1, 0.1);
+          var v = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2]);
+          object.scale.set(0.03, 0.03, 0.03);
+          var bb = new THREE.Box3().setFromObject(object);
+          var mn = bb.min;
+          var mx = bb.max;
+          var sep = mx.clone().add(mn).multiplyScalar(-0.5);
+          console.log(mn);
+          console.log(mx);
+          console.log(sep);
+          var gp = new THREE.Group();
+          object.position.set(sep.x / 2, sep.y / 2, sep.z / 2);
+          gp.add(object);
+          hermes = new SpaceShip(gp, pos, v);
           scene.add( hermes.group );
           loaded_bodies.push(hermes);
     });
@@ -96,6 +109,7 @@ class SolarSystem {
     // now add everything to the scene
     for (var i in this.bodies) {
       this.scene.add(this.bodies[i].group);
+      loaded_bodies.push(this.bodies[i].name);
     }
 
     // add in the stars
@@ -167,7 +181,10 @@ class SolarSystem {
         }
       }
       // add any user input accelerations to the hermes
-      // done in the hermes update_kinematics
+      // can only do burns when the time is at real time or slower
+      if (this.time_factor <= 2.0) {
+        this.bodies.hermes.update_thrusters(deltaT);
+      }
 
       // now update all the telemetry of all the bodies
       for (var key in this.bodies) {
@@ -192,7 +209,7 @@ class SolarSystem {
 
   updateTime() {
     this.time_per_frame = numberOfCalculationsPerFrame * deltaT;  // in seconds, going to need to scale this later
-    this.time_factor = Math.floor(this.time_per_frame * frame_rate);
+    this.time_factor = this.time_per_frame * frame_rate;
     this.time_info_holder.innerHTML = 'Time Step(s): ' + Math.floor(deltaT).toString() + '<br />Steps per frame: ' + 
       numberOfCalculationsPerFrame.toString() + '<br />Time Per Frame: ' + getTimeString(this.time_per_frame) + 
       '<br />FPS: ' + frame_rate.toString() + '<br />Time Factor: ' + this.time_factor.toString() +
@@ -203,6 +220,21 @@ class SolarSystem {
     this.viewer_distance = new THREE.Vector3().subVectors(this.camera.position.clone().multiplyScalar(DISTANCE_SCALE), 
       this.bodies.sun.position).length();
     this.perspective_holder.innerHTML = 'Viewer Distance from Sun:<br />' + getDistanceString(this.viewer_distance);
+  }
+
+  updateHermesInfo() {
+    var hf = document.getElementById('hermes_info');
+    var boosting = false;
+    for (var item in burn) {
+      if (burn[item] && this.time_factor <= 2.0){
+        boosting = true;
+        break;
+      }
+    }
+    hf.innerHTML = 'Hermes Info:<br />Velocity (km/s): ' + (this.bodies.hermes.velocity.length()).toFixed(4).toString() + 
+    '<br />Boosting: ' + boosting.toString() + '<br />Roll Rate: ' + (this.bodies.hermes.omega.x * 180 / Math.PI).toFixed(6).
+    toString() + '<br />Yaw Rate: ' + (this.bodies.hermes.omega.y * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Pitch Rate: ' + (this.bodies.hermes.omega.z * 180 / Math.PI).toFixed(6).toString();
   }
 
   makeToTween(pos2, rot2) {
@@ -227,7 +259,7 @@ class SolarSystem {
       } else if (body.name == 'venus') {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
       } else if (body.name == 'hermes') {
-        deltaT = 1 / FRAMES_TO_ROTATE * numberOfCalculationsPerFrame;
+        deltaT = 1 / FRAMES_TO_ROTATE / numberOfCalculationsPerFrame;
       } else {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
       }
@@ -237,12 +269,15 @@ class SolarSystem {
   bodyView() {
     // now need to define the tween parameters, use a dummy copy camera to get the final position we want
     var dummy = this.camera.clone();
-    dummy.lookAt(current_target.group.position.clone());
+    if (current_target.name == 'h') {
+      dummy.lookAt(current_target.center.clone());
+    } else {
+      dummy.lookAt(current_target.group.position.clone());
+    }
+    
     this.makeToTween(getCameraOffsetDestination(current_target, this.bodies.sun), dummy.rotation.clone());
     this.setPlanetDeltaT(current_target);
   }
-
-  
 
   // button interaction functions
   toEarthView() {
@@ -325,10 +360,26 @@ class SolarSystem {
     this.bodyView();
   }
 
+  toHermesView() {
+    current_target = this.bodies.hermes;
+    this.bodies.hermes.cockpit_view = false;
+    this.bodyView();
+  }
+
+  toHermesCockpit() {
+    current_target = this.bodies.hermes;
+    this.bodies.hermes.cockpit_view = true;
+    this.bodyView();
+  }
+
   onResetView() {
     current_target = this.bodies.sun;
     this.bodyView();
     deltaT = DEFAULT_dT;
+  }
+
+  toRealTime() {
+    deltaT = 1 / FRAMES_TO_ROTATE / numberOfCalculationsPerFrame;
   }
 
   onPause() {
@@ -357,6 +408,7 @@ class SolarSystem {
   }
 
   add_event_listeners() {
+
     this.onWindowResize = this.onWindowResize.bind(this);
     window.addEventListener('resize', this.onWindowResize, false);
 
@@ -415,6 +467,16 @@ class SolarSystem {
 
     this.onPause = this.onPause.bind(this);
     document.getElementById('pause').onclick = this.onPause;
+
+    this.toRealTime = this.toRealTime.bind(this);
+    document.getElementById('real_time').onclick = this.toRealTime;
+
+    this.toHermesView = this.toHermesView.bind(this);
+    document.getElementById('hermes_view').onclick = this.toHermesView;
+
+    this.toHermesCockpit = this.toHermesCockpit.bind(this);
+    document.getElementById('hermes_cockpit').onclick = this.toHermesCockpit;
+
   }
 
   run() {
@@ -428,7 +490,7 @@ class SolarSystem {
 
   render() {
     TWEEN.update();
-    if (!tweening_rot) {
+    if (!tweening_rot) {   //!(current_target == hermes && hermes.cockpit_view)
       this.updateControls();
     }
     this.updateAxCam();
@@ -439,7 +501,7 @@ class SolarSystem {
       this.updateDate();
     }
 
-    if (loaded_bodies.length == 18 && !started) {
+    if (loaded_bodies.length == NUM_BODIES && !started) {
       started = true;
       this.onAllLoaded();
     }
@@ -456,6 +518,10 @@ class SolarSystem {
       this.updateTime();
       // update the viewer distance
       this.updatePerspective();
+      if (started) {
+        this.updateHermesInfo();
+        // console.log(this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize());  // the x direction is forward)
+      }
     }
     
     this.renderer.render(this.scene, this.camera);

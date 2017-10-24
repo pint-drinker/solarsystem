@@ -90,6 +90,9 @@ getCameraOffsetDestination = function(ob, sun) {
     } else if (ob.name == 'mercury') {
       location.add(dir.multiplyScalar(ob.radius * 20 / PLANET_SCALE));
       location.z += ob.radius * 5 / PLANET_SCALE
+    } else if (ob.name == 'hermes') {
+      location.add(dir.multiplyScalar(5000000 * 20 / PLANET_SCALE));
+      location.z += 5000000 * 2 / PLANET_SCALE
     } else {
       location.add(dir.multiplyScalar(ob.radius * 8 / PLANET_SCALE));
       location.z += ob.radius * 2 / PLANET_SCALE

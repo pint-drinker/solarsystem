@@ -67,6 +67,16 @@
                 color: white;
                 font-family: "Times New Roman", Times, serif;
             }
+            #hermes_info {
+                position: absolute;
+                top: 350px;
+                right: 10px;
+                height: 60px;
+                width: 250px;
+                background: rgba(169, 169, 169, 0);
+                color: white;
+                font-family: "Times New Roman", Times, serif;
+            }
             .overlay {
                 position: absolute;
                 top: 50px;
@@ -103,6 +113,15 @@
                 background-color: #ED6C24;
                 transition-duration: 0.4s;
             }
+            .button4 {
+                background-color: #2828a4;
+                color: #FFFFFF;
+            }
+            .button4:hover {
+                background-color: #ED6C24;
+                color: #000000;
+                transition-duration: 0.4s;
+            }
             
         </style>
     </head>
@@ -111,7 +130,7 @@
             <!-- <img src="images/bkg.jpeg"/> -->
         </div>
         <div id="major_container">
-            <button class="button button1" id="sun_view">Sun (mobile view)</button>
+            <button class="button button1" id="sun_view">Sun</button>
             <button class="button button1" id="mercury_view">Mercury</button>
             <button class="button button1" id="venus_view">Venus</button>
             <button class="button button1" id="earth_view">Earth</button>
@@ -132,6 +151,9 @@
                 <div id="controls">
                     <button class="button button3" id="pause">Pause/Resume</button>
                     <button class="button button3" id="reset_view">Reset View</button>
+                    <button class="button button3" id="real_time">Real Time</button>
+                    <button class="button button4" id="hermes_view">Hermes (Track)</button>
+                    <button class="button button4" id="hermes_cockpit">Hermes Cockpit</button>
             </div>
         </div>
         <div id="date_holder">
@@ -139,6 +161,8 @@
         <div id="time_info_holder">
         </div>
         <div id="perspective_info">
+        </div>
+        <div id="hermes_info">
         </div>
         <script src="library/three.min.js"></script>
         <script src="library/DAT.GUI.min.js"></script>

@@ -1,7 +1,7 @@
 
 var loaded_bodies = [];
 
-var NUM_BODIES = 17;
+var NUM_BODIES = 18;
 
 class OrbitalBody {
 	constructor(obj, name) {
@@ -44,7 +44,6 @@ class OrbitalBody {
 	}
 
 	create(name, radius) {
-		loaded_bodies.push(name);
 		var loader = new THREE.TextureLoader();
 		if (name == 'earth') {
 			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32)
@@ -332,24 +331,71 @@ class OrbitalBody {
 	}
 }
 
+var burn = {booster: 0, brake: 0, roll_left: 0, roll_right: 0, yaw_left: 0, yaw_right: 0, pitch_up: 0, pitch_down: 0};
+
+onKeyDown = function( event ) {
+
+	if ( event.altKey ) {
+		return;
+	}
+	switch ( event.keyCode ) {
+
+		case 40: /* down arrow */ burn.brake = 1; break;
+		case 38: /* up arrow */ burn.booster = 1; break;
+
+		case 81: /* q */ burn.roll_left = 1; break;
+		case 69: /* e */ burn.roll_right = 1; break;
+
+		case 87: /* w */ burn.pitch_up = 1; break;
+		case 83: /* s */ burn.pitch_down = 1; break;
+
+		case 65: /* a */ burn.yaw_left = 1; break;
+		case 68: /* d */ burn.yaw_right = 1; break;
+
+	}
+};
+
+onKeyUp = function( event ) {
+
+	switch ( event.keyCode ) {
+
+		case 40: /* down arrow */ burn.brake = 0; break;
+		case 38: /* up arrow */ burn.booster = 0; break;
+
+		case 81: /* q */ burn.roll_left = 0; break;
+		case 69: /* e */ burn.roll_right = 0; break;
+
+		case 87: /* w */ burn.pitch_up = 0; break;
+		case 83: /* s */ burn.pitch_down = 0; break;
+
+		case 65: /* a */ burn.yaw_left = 0; break;
+		case 68: /* d */ burn.yaw_right = 0; break;
+	}
+};
+
+window.addEventListener('keydown', onKeyDown, false);
+window.addEventListener('keyup', onKeyUp, false);
+
 
 class SpaceShip {
 	constructor(group, position, velocity) {
 		this.name = 'hermes';
 		this.group = group;
 		
+		this.cockpit_view = false;
+		
 		this.position = position;
 		this.velocity = velocity;
 		this.acceleration = new THREE.Vector3();
 
-		this.theta_roll = 0;  // about the local central axis
-		this.theta_yaw = 0;  // about the local central crossed axis
-		this.theta_pitch = 0;  // about the local central cross axis
+		this.theta_roll = 0;  // about the local central axis, x
+		this.theta_yaw = 0;  // about the local central crossed axis, y
+		this.theta_pitch = 0;  // about the local central cross axis, z
 		this.theta = new THREE.Vector3();
 		this.omega = new THREE.Vector3();
 		this.alpha = new THREE.Vector3();
 
-		this.mass = 1000000;  // one million pounds
+		this.mass = 10000000;  // one million kg
 		this.length = 300; // meters
 		this.radius = 25;  // average radius
 
@@ -357,81 +403,44 @@ class SpaceShip {
 		this.I_pitch = this.I_yaw;
 		this.I_roll = 1/2 * this.mass * this.radius * this.radius;
 
-		this.booster_thrust = 1000000 * 4.44822;
-		this.brake_thrust = 500000 * 4.44822
+		this.booster_thrust = 10000000 * 4.44822;
+		this.brake_thrust = 5000000* 4.44822
 		this.roll_torque = 1000000 * 4.44822;
-		this.yaw_torque = 1000000 * 4.44822;
+		this.yaw_torque = 10000000 * 4.44822;
 		this.pitch_torque = 1000000 * 4.44822;
-
-		this.burn = {booster: false, brake: false, roll_left: false, roll_right: false, yaw_left: false, yaw_right: false, 
-			pitch_up: false, pitch_down: false};
 
 		this.host = undefined;
 
-
-		this.handleEvent = function ( event ) {
-
-			if ( typeof this[ event.type ] == 'function' ) {
-
-				this[ event.type ]( event );
-
-			}
-
-		};
-
-		this.keydown = function( event ) {
-
-			if ( event.altKey ) {
-				return;
-			}
-			switch ( event.keyCode ) {
-
-				case 40: /* down arrow */ this.burn.brake = true; break;
-				case 38: /* up arrow */ this.burn.booster = true; break;
-
-				case 81: /* q */ this.burn.roll_left = true; break;
-				case 69: /* e */ this.burn.roll_right = true; break;
-
-				case 87: /* w */ this.burn.pitch_up = true; break;
-				case 83: /* s */ this.burn.pitch_down = true; break;
-
-				case 65: /* a */ this.burn.yaw_left = true; break;
-				case 68: /* d */ this.burn.yaw_right = true; break;
-
-			}
-
-		};
-
-		this.keyup = function( event ) {
-
-			switch ( event.keyCode ) {
-
-				case 40: /* down arrow */ this.burn.brake = false; break;
-				case 38: /* up arrow */ this.burn.booster = false; break;
-
-				case 81: /* q */ this.burn.roll_left = false; break;
-				case 69: /* e */ this.burn.roll_right = false; break;
-
-				case 87: /* w */ this.burn.pitch_up = false; break;
-				case 83: /* s */ this.burn.pitch_down = false; break;
-
-				case 65: /* a */ this.burn.yaw_left = false; break;
-				case 68: /* d */ this.burn.yaw_right = false; break;
-			}
-		};
+		// var quaternion = new THREE.Quaternion(); // create one and reuse it
+		// var vec = this.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
+		// quaternion.setFromUnitVectors( v1, v2 );
 
 		this.move_body();
 		}
 
-	update_kinematics(dt) {
-		// first need to update based on the input of keys
-		// refer to the local directional vectors we established, and then need to create and apply angles
-		// how to keep track of our local axis and everything is the next big step
-		if (this.burn.booster) {
-			var dir = this.group.localToWorld(new THREE.Vector3(1, 0, 0));  // the x direction is forward
-			console.log(dir);
+	update_thrusters(dt) {
+		this.alpha.set(0, 0, 0);
+		if (burn.booster) {
+			var dir = this.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();  // the x direction is forward
+			this.acceleration.add(dir.multiplyScalar(this.booster_thrust / this.mass * dt));
 		}
+		if (burn.brake) {
+			var dir = this.group.localToWorld(new THREE.Vector3(-1, 0, 0)).normalize();  // the x direction is back
+			this.acceleration.add(dir.multiplyScalar(this.booster_thrust / this.mass * dt));
+		}
+		if (burn.roll_right || burn.yaw_right || burn.pitch_up) {
+			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * dt * burn.roll_right, 
+				this.yaw_torque / this.I_yaw * dt * burn.yaw_right, this.pitch_torque / this.I_pitch * dt * burn.pitch_up);
+			this.alpha.add(dir);
+		}
+		if (burn.roll_left || burn.yaw_left || burn.pitch_down) {
+			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * dt * burn.roll_left, 
+				this.yaw_torque / this.I_yaw * dt * burn.yaw_left, this.pitch_torque / this.I_pitch * dt * burn.pitch_down);
+			this.alpha.sub(dir);
+		}
+	}
 
+	update_kinematics(dt) {
 		// update 
 		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
 		this.position.add(this.velocity.clone().multiplyScalar(dt));
@@ -445,7 +454,7 @@ class SpaceShip {
 		var y_comp = this.position.y / DISTANCE_SCALE;
 		var z_comp = this.position.z / DISTANCE_SCALE;
 		this.group.position.set(x_comp, y_comp, z_comp);
-		this.group.rotation.copy(this.theta);
+		this.group.rotation.set(this.theta.x, this.theta.y, this.theta.z);
 	}
 }
 
