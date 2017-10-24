@@ -415,18 +415,18 @@ class SpaceShip {
 		// var vec = this.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
 		// quaternion.setFromUnitVectors( v1, v2 );
 
+		this.pointer = new THREE.Vector3(1, 0, 0);
+
 		this.move_body();
 		}
 
 	update_thrusters(dt) {
 		this.alpha.set(0, 0, 0);
 		if (burn.booster) {
-			var dir = this.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();  // the x direction is forward
-			this.acceleration.add(dir.multiplyScalar(this.booster_thrust / this.mass * dt));
+			this.acceleration.add(this.pointer.clone().multiplyScalar(this.booster_thrust / this.mass * dt));
 		}
 		if (burn.brake) {
-			var dir = this.group.localToWorld(new THREE.Vector3(-1, 0, 0)).normalize();  // the x direction is back
-			this.acceleration.add(dir.multiplyScalar(this.booster_thrust / this.mass * dt));
+			this.acceleration.add(this.pointer.clone().multiplyScalar(-this.booster_thrust / this.mass * dt));
 		}
 		if (burn.roll_right || burn.yaw_right || burn.pitch_up) {
 			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * dt * burn.roll_right, 
@@ -441,6 +441,7 @@ class SpaceShip {
 	}
 
 	update_kinematics(dt) {
+		this.pointer = this.group.getWorldDirection().normalize().cross(new THREE.Vector3(0, -1, 0));
 		// update 
 		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
 		this.position.add(this.velocity.clone().multiplyScalar(dt));

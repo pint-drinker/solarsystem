@@ -79,9 +79,6 @@ class SolarSystem {
           var mn = bb.min;
           var mx = bb.max;
           var sep = mx.clone().add(mn).multiplyScalar(-0.5);
-          console.log(mn);
-          console.log(mx);
-          console.log(sep);
           var gp = new THREE.Group();
           object.position.set(sep.x / 2, sep.y / 2, sep.z / 2);
           gp.add(object);
@@ -224,6 +221,8 @@ class SolarSystem {
 
   updateHermesInfo() {
     var hf = document.getElementById('hermes_info');
+    // var pointer = this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
+    var pointer = this.bodies.hermes.pointer;
     var boosting = false;
     for (var item in burn) {
       if (burn[item] && this.time_factor <= 2.0){
@@ -231,10 +230,21 @@ class SolarSystem {
         break;
       }
     }
-    hf.innerHTML = 'Hermes Info:<br />Velocity (km/s): ' + (this.bodies.hermes.velocity.length()).toFixed(4).toString() + 
-    '<br />Boosting: ' + boosting.toString() + '<br />Roll Rate: ' + (this.bodies.hermes.omega.x * 180 / Math.PI).toFixed(6).
-    toString() + '<br />Yaw Rate: ' + (this.bodies.hermes.omega.y * 180 / Math.PI).toFixed(6).toString() + 
-    '<br />Pitch Rate: ' + (this.bodies.hermes.omega.z * 180 / Math.PI).toFixed(6).toString();
+    hf.innerHTML = 'Hermes Info:' + 
+    '<br />Velocity (km/s): ' + this.bodies.hermes.velocity.length().toFixed(4).toString() + 
+    '<br />Boosting: ' + boosting.toString() + 
+    '<br />System Orientation:<br />X: ' + pointer.x.toFixed(5).toString() + 
+    '<br />Y: ' + pointer.y.toFixed(5).toString() + 
+    '<br />Z: ' + pointer.z.toFixed(5).toString() + 
+    '<br />Vx: ' + this.bodies.hermes.velocity.x.toFixed(4).toString() + 
+    '<br />Vy: ' + this.bodies.hermes.velocity.y.toFixed(4).toString() +
+    '<br />Vz: ' + this.bodies.hermes.velocity.z.toFixed(4).toString() + 
+    '<br />Roll Rate: ' + (this.bodies.hermes.omega.x * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Roll: ' + (this.bodies.hermes.theta.x * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Yaw Rate: ' + (this.bodies.hermes.omega.y * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Yaw: ' + (this.bodies.hermes.theta.y * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Pitch Rate: ' + (this.bodies.hermes.omega.z * 180 / Math.PI).toFixed(6).toString() + 
+    '<br />Pitch: ' + (this.bodies.hermes.theta.z * 180 / Math.PI).toFixed(6).toString();
   }
 
   makeToTween(pos2, rot2) {
