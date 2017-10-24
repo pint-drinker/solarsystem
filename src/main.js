@@ -8,6 +8,7 @@ var trackball;
 var current_target;
 var scene = new THREE.Scene();
 var hermes;
+var scope;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
@@ -21,6 +22,7 @@ function onTweeningTranComplete() {
 
 class SolarSystem {
   constructor() {
+    var scope = this;
     // initializing node
     this.node = document.getElementById("house");
     this.node.width = window.innerWidth;
@@ -62,15 +64,17 @@ class SolarSystem {
 
     // world elements
     this.renderer = createRenderer(this.node);
+    this.hermes = undefined;
 
     var loader = new THREE.TDSLoader( );
     loader.load( 'library/Hermes.3ds', function ( object ) {
-          const pos = new THREE.Vector3(1, 1, 1).multiplyScalar(696300000 * 0.75 / PLANET_SCALE);
-          hermes = object;
-          console.log(hermes);
-          hermes.scale.set(0.1, 0.1, 0.1);
-          hermes.position.set(pos.x, pos.y, pos.z);
-          scene.add( hermes );
+          var obj = data.earth;
+          var pos = new THREE.Vector3(obj.position[0]*1.5, obj.position[1], obj.position[2]);
+          var v = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2])
+          hermes = new SpaceShip(object, pos, v);
+          hermes.group.scale.set(0.1, 0.1, 0.1);
+          scene.add( hermes.group );
+          loaded_bodies.push(hermes);
     });
     this.scene = scene;
 
@@ -117,6 +121,15 @@ class SolarSystem {
     this.run();
   }
 
+  onAllLoaded() {
+    this.hermes = loaded_bodies[loaded_bodies.length - 1];
+    this.bodies['hermes'] = this.hermes;
+    tweening_tran = true;
+    var pos2 = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
+    var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 5000)
+    .easing(TWEEN.Easing.Quadratic.In).onComplete(onTweeningTranComplete).start();
+  }
+
   updateAxCam() {
     this.axes.camera.position.subVectors(this.camera.position, trackball.target);
     this.axes.camera.position.setLength(SCENE_DEFAULTS.cam_distance);
@@ -153,6 +166,8 @@ class SolarSystem {
           } 
         }
       }
+      // add any user input accelerations to the hermes
+      // done in the hermes update_kinematics
 
       // now update all the telemetry of all the bodies
       for (var key in this.bodies) {
@@ -211,6 +226,8 @@ class SolarSystem {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 10;
       } else if (body.name == 'venus') {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
+      } else if (body.name == 'hermes') {
+        deltaT = 1 / FRAMES_TO_ROTATE * numberOfCalculationsPerFrame;
       } else {
         deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
       }
@@ -225,12 +242,7 @@ class SolarSystem {
     this.setPlanetDeltaT(current_target);
   }
 
-  onAllLoaded() {
-    tweening_tran = true;
-    var pos2 = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
-    var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 5000)
-    .easing(TWEEN.Easing.Quadratic.In).onComplete(onTweeningTranComplete).start();
-  }
+  
 
   // button interaction functions
   toEarthView() {
@@ -427,7 +439,7 @@ class SolarSystem {
       this.updateDate();
     }
 
-    if (loaded_bodies.length == 17 && !started) {
+    if (loaded_bodies.length == 18 && !started) {
       started = true;
       this.onAllLoaded();
     }

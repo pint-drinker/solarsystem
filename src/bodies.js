@@ -18,7 +18,7 @@ class OrbitalBody {
 
 		// cartesian updates
 		this.position = new THREE.Vector3(obj.position[0], obj.position[1], obj.position[2]);
-		this.velocity = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2])
+		this.velocity = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2]);
 		this.acceleration = new THREE.Vector3();
 
 		// axis tilt, representing a rotation about the z direction in radians
@@ -342,6 +342,13 @@ class SpaceShip {
 		this.velocity = velocity;
 		this.acceleration = new THREE.Vector3();
 
+		this.theta_roll = 0;  // about the local central axis
+		this.theta_yaw = 0;  // about the local central crossed axis
+		this.theta_pitch = 0;  // about the local central cross axis
+		this.theta = new THREE.Vector3();
+		this.omega = new THREE.Vector3();
+		this.alpha = new THREE.Vector3();
+
 		this.mass = 1000000;  // one million pounds
 		this.length = 300; // meters
 		this.radius = 25;  // average radius
@@ -364,82 +371,81 @@ class SpaceShip {
 
 		this.handleEvent = function ( event ) {
 
-		if ( typeof this[ event.type ] == 'function' ) {
+			if ( typeof this[ event.type ] == 'function' ) {
 
-			this[ event.type ]( event );
+				this[ event.type ]( event );
 
+			}
+
+		};
+
+		this.keydown = function( event ) {
+
+			if ( event.altKey ) {
+				return;
+			}
+			switch ( event.keyCode ) {
+
+				case 40: /* down arrow */ this.burn.brake = true; break;
+				case 38: /* up arrow */ this.burn.booster = true; break;
+
+				case 81: /* q */ this.burn.roll_left = true; break;
+				case 69: /* e */ this.burn.roll_right = true; break;
+
+				case 87: /* w */ this.burn.pitch_up = true; break;
+				case 83: /* s */ this.burn.pitch_down = true; break;
+
+				case 65: /* a */ this.burn.yaw_left = true; break;
+				case 68: /* d */ this.burn.yaw_right = true; break;
+
+			}
+
+		};
+
+		this.keyup = function( event ) {
+
+			switch ( event.keyCode ) {
+
+				case 40: /* down arrow */ this.burn.brake = false; break;
+				case 38: /* up arrow */ this.burn.booster = false; break;
+
+				case 81: /* q */ this.burn.roll_left = false; break;
+				case 69: /* e */ this.burn.roll_right = false; break;
+
+				case 87: /* w */ this.burn.pitch_up = false; break;
+				case 83: /* s */ this.burn.pitch_down = false; break;
+
+				case 65: /* a */ this.burn.yaw_left = false; break;
+				case 68: /* d */ this.burn.yaw_right = false; break;
+			}
+		};
+
+		this.move_body();
 		}
 
-	};
-
-	this.keydown = function( event ) {
-
-		if ( event.altKey ) {
-			return;
-		}
-		switch ( event.keyCode ) {
-
-			case 16: /* shift */ this.burn.brake = true; break;
-			case 32: /* space */ this.burn.booster = true; break;
-
-			// case 87: /*W*/ this.moveState.forward = 1; break;
-			// case 83: /*S*/ this.moveState.back = 1; break;
-
-			// case 65: /*A*/ this.moveState.left = 1; break;
-			// case 68: /*D*/ this.moveState.right = 1; break;
-
-			// case 82: /*R*/ this.moveState.up = 1; break;
-			// case 70: /*F*/ this.moveState.down = 1; break;
-
-			// case 38: up this.moveState.pitchUp = 1; break;
-			// case 40: /*down*/ this.moveState.pitchDown = 1; break;
-
-			// case 37: /*left*/ this.moveState.yawLeft = 1; break;
-			// case 39: /*right*/ this.moveState.yawRight = 1; break;
-
-			// case 81: /*Q*/ this.moveState.rollLeft = 1; break;
-			// case 69: /*E*/ this.moveState.rollRight = 1; break;
-
+	update_kinematics(dt) {
+		// first need to update based on the input of keys
+		// refer to the local directional vectors we established, and then need to create and apply angles
+		// how to keep track of our local axis and everything is the next big step
+		if (this.burn.booster) {
+			var dir = this.group.localToWorld(new THREE.Vector3(1, 0, 0));  // the x direction is forward
+			console.log(dir);
 		}
 
-		// this.updateMovementVector();
-		// this.updateRotationVector();
+		// update 
+		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
+		this.position.add(this.velocity.clone().multiplyScalar(dt));
+		// need to resolve local spinning based on local axis, need to make that nice
+		this.omega.add(this.alpha.clone().multiplyScalar(dt));
+		this.theta.add(this.omega.clone().multiplyScalar(dt));
+	}
 
-	};
-
-	this.keyup = function( event ) {
-
-		switch ( event.keyCode ) {
-
-			case 32: /* space */ this.burn.booster = false; break;
-			case 16: /* shift */ this.burn.brake = false; break;
-
-			// case 87: /*W*/ this.moveState.forward = 0; break;
-			// case 83: /*S*/ this.moveState.back = 0; break;
-
-			// case 65: /*A*/ this.moveState.left = 0; break;
-			// case 68: /*D*/ this.moveState.right = 0; break;
-
-			// case 82: /*R*/ this.moveState.up = 0; break;
-			// case 70: /*F*/ this.moveState.down = 0; break;
-
-			// case 38: up this.moveState.pitchUp = 0; break;
-			// case 40: /*down*/ this.moveState.pitchDown = 0; break;
-
-			// case 37: /*left*/ this.moveState.yawLeft = 0; break;
-			// case 39: /*right*/ this.moveState.yawRight = 0; break;
-
-			// case 81: /*Q*/ this.moveState.rollLeft = 0; break;
-			// case 69: /*E*/ this.moveState.rollRight = 0; break;
-
-		}
-
-		// this.updateMovementVector();
-		// this.updateRotationVector();
-
-	};
-
-	
+	move_body() {
+		var x_comp = this.position.x / DISTANCE_SCALE;
+		var y_comp = this.position.y / DISTANCE_SCALE;
+		var z_comp = this.position.z / DISTANCE_SCALE;
+		this.group.position.set(x_comp, y_comp, z_comp);
+		this.group.rotation.copy(this.theta);
 	}
 }
 
