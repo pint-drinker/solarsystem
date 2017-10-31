@@ -395,7 +395,7 @@ class SpaceShip {
 		this.omega = new THREE.Vector3();
 		this.alpha = new THREE.Vector3();
 
-		this.mass = 10000000;  // one million kg
+		this.mass = 1000000;  // one million kg
 		this.length = 300; // meters
 		this.radius = 25;  // average radius
 
@@ -404,10 +404,10 @@ class SpaceShip {
 		this.I_roll = 1/2 * this.mass * this.radius * this.radius;
 
 		this.booster_thrust = 10000000 * 4.44822;
-		this.brake_thrust = 5000000* 4.44822
-		this.roll_torque = 1000000 * 4.44822;
-		this.yaw_torque = 10000000 * 4.44822;
-		this.pitch_torque = 1000000 * 4.44822;
+		this.brake_thrust = 5000000 * 4.44822;
+		this.roll_torque = this.I_roll;
+		this.yaw_torque = this.I_yaw;
+		this.pitch_torque = this.I_pitch;
 
 		this.host = undefined;
 
@@ -416,22 +416,22 @@ class SpaceShip {
 		this.move_body();
 		}
 
-	update_thrusters(dt) {
+	update_thrusters() {
 		this.alpha.set(0, 0, 0);
 		if (burn.booster) {
-			this.acceleration.add(this.pointer.clone().multiplyScalar(this.booster_thrust / this.mass * dt));
+			this.acceleration.add(this.pointer.clone().multiplyScalar(this.booster_thrust / this.mass));
 		}
 		if (burn.brake) {
-			this.acceleration.add(this.pointer.clone().multiplyScalar(-this.booster_thrust / this.mass * dt));
+			this.acceleration.add(this.pointer.clone().multiplyScalar(-this.brake_thrust / this.mass));
 		}
 		if (burn.roll_right || burn.yaw_right || burn.pitch_up) {
-			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * dt * burn.roll_right, 
-				this.yaw_torque / this.I_yaw * dt * burn.yaw_right, this.pitch_torque / this.I_pitch * dt * burn.pitch_up);
+			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * burn.roll_right, 
+				this.yaw_torque / this.I_yaw * burn.yaw_right, this.pitch_torque / this.I_pitch * burn.pitch_up);
 			this.alpha.add(dir);
 		}
 		if (burn.roll_left || burn.yaw_left || burn.pitch_down) {
-			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * dt * burn.roll_left, 
-				this.yaw_torque / this.I_yaw * dt * burn.yaw_left, this.pitch_torque / this.I_pitch * dt * burn.pitch_down);
+			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * burn.roll_left, 
+				this.yaw_torque / this.I_yaw * burn.yaw_left, this.pitch_torque / this.I_pitch * burn.pitch_down);
 			this.alpha.sub(dir);
 		}
 	}

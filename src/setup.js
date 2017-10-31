@@ -106,7 +106,7 @@ setupGui = function() {
 	var top = gui.addFolder('Time Scaling');
 
 	var cGUI = 
-	top.add(parameters, 'time_scale' ).min(1.65 * Math.pow(10, -6)).max(52).step(0.01).name("Weeks/Sec").listen();
+	top.add(parameters, 'time_scale' ).min(-52).max(52).step(0.01).name("Weeks/Sec").listen();  // 1.65 * Math.pow(10, -6)
 	cGUI.onChange( function(value) { 
 	  deltaT = resolveTimeStep(value, numberOfCalculationsPerFrame, frame_rate);
 	});

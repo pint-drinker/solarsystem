@@ -16,5 +16,3 @@ Solar System Animator
 
 
 ### Want to see it? ###
-
-* http://htmlpreview.github.io/?https://github.com/dwensberg/solarsystem/blob/master/src/index.html

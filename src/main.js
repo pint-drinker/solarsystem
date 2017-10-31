@@ -207,7 +207,7 @@ class SolarSystem {
   updateTime() {
     this.time_per_frame = numberOfCalculationsPerFrame * deltaT;  // in seconds, going to need to scale this later
     this.time_factor = this.time_per_frame * frame_rate;
-    this.time_info_holder.innerHTML = 'Time Step(s): ' + Math.floor(deltaT).toString() + '<br />Steps per frame: ' + 
+    this.time_info_holder.innerHTML = 'Time Step(s): ' + deltaT.toFixed(4).toString() + '<br />Steps per frame: ' + 
       numberOfCalculationsPerFrame.toString() + '<br />Time Per Frame: ' + getTimeString(this.time_per_frame) + 
       '<br />FPS: ' + frame_rate.toString() + '<br />Time Factor: ' + this.time_factor.toString() +
       '<br />1 sec = ' + getTimeString(this.time_factor);
@@ -239,6 +239,7 @@ class SolarSystem {
     '<br />Vx: ' + this.bodies.hermes.velocity.x.toFixed(4).toString() + 
     '<br />Vy: ' + this.bodies.hermes.velocity.y.toFixed(4).toString() +
     '<br />Vz: ' + this.bodies.hermes.velocity.z.toFixed(4).toString() + 
+    '<br />Roll Alpha: ' + (this.bodies.hermes.alpha.x * 180 / Math.PI).toFixed(6).toString() + 
     '<br />Roll Rate: ' + (this.bodies.hermes.omega.x * 180 / Math.PI).toFixed(6).toString() + 
     '<br />Roll: ' + (this.bodies.hermes.theta.x * 180 / Math.PI).toFixed(6).toString() + 
     '<br />Yaw Rate: ' + (this.bodies.hermes.omega.y * 180 / Math.PI).toFixed(6).toString() + 
@@ -287,6 +288,7 @@ class SolarSystem {
     
     this.makeToTween(getCameraOffsetDestination(current_target, this.bodies.sun), dummy.rotation.clone());
     this.setPlanetDeltaT(current_target);
+    trackball.enabled = true;
   }
 
   // button interaction functions

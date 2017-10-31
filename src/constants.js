@@ -15,7 +15,6 @@ const SHADOWS_ENABLED = false;
 
 const G = 6.67408 * Math.pow(10, -11);
 
-
 const TRACKBALL_DEFAULTS = {
 	rotateSpeed: 2.0,
     zoomSpeed: 2.0,
@@ -32,8 +31,4 @@ const SCENE_DEFAULTS = {
 	scale_length: 40,
 };
 
-// Maping between keys in the json document and the colors and descriptions associated with features
-const KEYS = {
-	earth: 'earth',
-	sun: 'sun'
-};
+// need to filereader all the objects in to memory so they can be loaded in the browser
