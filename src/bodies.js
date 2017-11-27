@@ -437,6 +437,7 @@ class SpaceShip {
 	}
 
 	update_kinematics(dt) {
+		// get WorldDirection gives you world direction of positive x-axis
 		this.pointer = this.group.getWorldDirection().normalize().cross(new THREE.Vector3(0, -1, 0));
 		// update 
 		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));

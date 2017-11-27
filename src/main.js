@@ -80,7 +80,7 @@ class SolarSystem {
           var mx = bb.max;
           var sep = mx.clone().add(mn).multiplyScalar(-0.5);
           var gp = new THREE.Group();
-          object.position.set(sep.x / 2, sep.y / 2, sep.z / 2);
+          object.position.set(sep.x , sep.y / 2, sep.z / 2);
           gp.add(object);
           hermes = new SpaceShip(gp, pos, v);
           scene.add( hermes.group );
@@ -379,9 +379,32 @@ class SolarSystem {
   }
 
   toHermesCockpit() {
+    // current_target = this.bodies.hermes;
+    // this.bodies.hermes.cockpit_view = true;
+    // trackball.enabled = false;
+
+    // // this.bodyView();
+    // // get the camera to the position and then have it look down x axis, need to rack it to a coordinate system
+    // // just have the camera position be the same as the bodies and rotation as well
+    // this.updateCamera();
+
     current_target = this.bodies.hermes;
     this.bodies.hermes.cockpit_view = true;
     this.bodyView();
+  }
+
+  updateCamera() { // not fucking workin at all, do path trackin now instead
+    // only use for now if in cockpit view
+    let p = this.bodies.hermes.group.position.clone();
+    let pointer = this.bodies.hermes.pointer.clone();  // local x-axis of ship
+    let zdir = this.bodies.hermes.group.getWorldDirection().normalize();
+    // p.add(zdir.multiplyScalar(5));
+    this.camera.position.set(p.x, p.y, p.z);
+    this.camera.updateProjectionMatrix();
+    // now need to make the camera offset point to look at
+    let off = p.add(pointer.multiplyScalar(2));
+    this.camera.lookAt(off);
+    this.camera.updateProjectionMatrix();
   }
 
   onResetView() {
@@ -488,7 +511,6 @@ class SolarSystem {
 
     this.toHermesCockpit = this.toHermesCockpit.bind(this);
     document.getElementById('hermes_cockpit').onclick = this.toHermesCockpit;
-
   }
 
   run() {

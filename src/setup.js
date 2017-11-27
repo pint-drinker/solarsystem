@@ -101,15 +101,41 @@ createGlow = function(orbital_body) {
 setupGui = function() {
 	var gui = new dat.GUI();
 	var parameters = 
-	{time_scale : 0.14, color: "#ffff00" };  // time scaling units are in weeks
+	{week_scale : 0.14, day_scale : 0, hour_scale : 0, minute_scale : 0, 
+  second_scale : 0, color: "#ffff00" };  // time scaling units are in weeks
 
 	var top = gui.addFolder('Time Scaling');
 
 	var cGUI = 
-	top.add(parameters, 'time_scale' ).min(-52).max(52).step(0.01).name("Weeks/Sec").listen();  // 1.65 * Math.pow(10, -6)
+	top.add(parameters, 'week_scale' ).min(-52).max(52).step(1).name("Weeks/Sec").listen();  // 1.65 * Math.pow(10, -6)
 	cGUI.onChange( function(value) { 
-	  deltaT = resolveTimeStep(value, numberOfCalculationsPerFrame, frame_rate);
+    week_dt = 604800 * value;
+    deltaT = (week_dt + day_dt + hour_dt + minute_dt + second_dt) / numberOfCalculationsPerFrame / frame_rate;
 	});
+  var dGUI = 
+  top.add(parameters, 'day_scale').min(-7).max(7).step(1).name("Days/Sec").listen();
+  dGUI.onChange( function(value) {
+    day_dt = 86400 * value;
+    deltaT = (week_dt + day_dt + hour_dt + minute_dt + second_dt) / numberOfCalculationsPerFrame / frame_rate;
+  });
+  var hGUI = 
+  top.add(parameters, 'hour_scale').min(-24).max(24).step(1).name("Hours/Sec").listen();
+  hGUI.onChange( function(value) {
+    hour_dt = 3600 * value;
+    deltaT = (week_dt + day_dt + hour_dt + minute_dt + second_dt) / numberOfCalculationsPerFrame / frame_rate;
+  });
+  var mGUI = 
+  top.add(parameters, 'minute_scale').min(-60).max(60).step(1).name("Mins/Sec").listen();
+  mGUI.onChange( function(value) {
+    minute_dt = 60 * value;
+    deltaT = (week_dt + day_dt + hour_dt + minute_dt + second_dt) / numberOfCalculationsPerFrame / frame_rate;
+  });
+  var sGUI = 
+  top.add(parameters, 'second_scale').min(-60).max(60).step(1).name("Seconds/Sec").listen();
+  sGUI.onChange( function(value) {
+    second_dt = value;
+    deltaT = (week_dt + day_dt + hour_dt + minute_dt + second_dt) / numberOfCalculationsPerFrame / frame_rate;
+  });
 }
 
 createOrbitalBodies = function() {

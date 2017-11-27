@@ -52,6 +52,12 @@ getDistanceString = function(meters) {
 }
 
 var deltaT = DEFAULT_dT;
+var total_dt = 0;
+var week_dt = 0;
+var day_dt = 0;
+var hour_dt = 0;
+var minute_dt = 0;
+var second_dt = 0;
 var numberOfCalculationsPerFrame = DEFAULT_FRAMES;
 var frame_rate = 60;
 
