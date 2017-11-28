@@ -1,5 +1,11 @@
 // houses all of the utility functions not needed inside the solar system class
 
+var TIME = INITIAL_TIME;  // everything will be driven and based off of this time value, and all we have to do is change this
+// value to change the location of everything. And if we want to animate at certain speeds or with a slider, 
+// we just change this value. This time will then parse through the data path of each body and update all
+// of their displays.
+
+
 getNodeComputedProperty = (node, prop) => {
   return window.getComputedStyle(node, null).getPropertyValue(prop);
 };
@@ -40,6 +46,25 @@ isInside = function(item, array) {
   return false;
 }
 
+findClosestIndex = function(time_value, time_array) {
+  if (time_value < time_array[1]) {
+    return 0;
+  } else if (time_value > time_array[time_array.length - 2]) {
+    return time_array.length - 1;
+  } else {
+    for (let i = 1; i < time_array.length - 1; i++) {
+      if (time_value > time_array[i] && time_value < time_array[i + 1]) {
+        if (Math.abs(time_value - time_array[i]) > Math.abs(time_value - time_array[i + 1])) {
+          return i + 1;
+        } else {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+}
+
 getDistanceString = function(meters) {
   let ly = Math.floor(meters / (299792458 * 3600 * 24 * 365));
   let Mkm = Math.floor((meters % (299792458 * 3600 * 24 * 365)) / 1000000000);
@@ -50,21 +75,6 @@ getDistanceString = function(meters) {
   st += Mkm.toString() + ' Million km';
   return st;
 }
-
-var deltaT = DEFAULT_dT;
-var total_dt = 0;
-var week_dt = 0;
-var day_dt = 0;
-var hour_dt = 0;
-var minute_dt = 0;
-var second_dt = 0;
-var numberOfCalculationsPerFrame = DEFAULT_FRAMES;
-var frame_rate = 60;
-
-resolveTimeStep = function (weeks_per_sec, calc_per_frame, frames_per_sec) {
-    return 604800 / calc_per_frame / frames_per_sec * weeks_per_sec
-  }
-
 
   // get the gravitational acceleration contribution from another orbital body
 get_acceleration_contribution = function(body1, body2) {

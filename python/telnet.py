@@ -2,8 +2,8 @@
 import time
 import pexpect
 
-START_DATE = '1972-Jan-1 00:00:00'
-END_DATE = '1975-Jan-1 00:00:00'
+START_DATE = '1972-Mar-03 03:00:00'
+END_DATE = '1976-Mar-03 03:00:00'
 LOCAL_EPH = '/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/'
 LOCAL_INFO = '/Users/dwensberg/Desktop/development/solarsystem/src/info/'
 MACHINE_NAME = 'ssd.jpl.nasa.gov'
@@ -42,7 +42,7 @@ def define_bodies():
     neptune = {'id': 899, 'local': 'neptune.txt', 'remote_info': '', 'remote_eph': ''}
     triton = {'id': 801, 'local': 'triton.txt', 'remote_info': '', 'remote_eph': ''}
     pluto = {'id': 999, 'local': 'pluto.txt', 'remote_info': '', 'remote_eph': ''}
-    pioneer10 = {'id': 23, 'local': 'pioneer10.txt', 'remote_info': '', 'remote_eph': ''}
+    pioneer10 = {'id': '-23', 'local': 'pioneer10.txt', 'remote_info': '', 'remote_eph': ''}
     bodies = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto,
               saturn, titan, uranus, neptune, triton, pluto, pioneer10]
     return bodies
@@ -94,7 +94,7 @@ def write_ephemerides(start_date, end_date, bodies):
         child.expect_exact('] : ')
         child.sendline(end_date)
         child.expect_exact('] : ')
-        child.sendline('1h')  # sending interval of collection
+        child.sendline('3h')  # sending interval of collection
         child.expect_exact('] : ')
         child.sendline('y')
         child.expect_exact(' ? : ', timeout=60)

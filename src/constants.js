@@ -6,10 +6,8 @@ const PLANET_SCALE = Math.pow(10, 6);  // so mplanet sizes are shrunk by a facto
 const AU = 1.496 * Math.pow(10, 11);
 const DISTANCE_SCALE = AU / 300;  // distances are shrunk by a factor of 1 AU to 300 pixels
 const MOON_FAC = 12;
-const FRAMES_TO_ROTATE = 60;
-const DEFAULT_FRAMES = 100;
-const DEFAULT_dT = 3600 * 24 / 100;
-const DEFAULT_UPDATE_TIME = 500;  // update text every second, or 1000 milliseconds
+const INITIAL_TIME = data.sun.time[0];
+const END_TIME = data.sun.time[data.sun.time.length - 1];
 
 const SHADOWS_ENABLED = false;
 

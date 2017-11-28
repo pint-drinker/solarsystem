@@ -1,12 +1,12 @@
 
-var loaded_bodies = [];
-
 var NUM_BODIES = 18;
 
 class OrbitalBody {
 	constructor(obj, name) {
 		this.name = name;
 		this.group = new THREE.Group();  // possibly for moons and shit
+
+		this.start_time = obj.time[0];
 
 		this.mass = obj.mass;
 		this.radius = obj.radius;
@@ -16,10 +16,14 @@ class OrbitalBody {
 		this.theta = 0;
 		this.omega = obj.omega;
 
+		// array of time values that refer to position and velocity values by index
+		this.time = obj.time;
+		this.position_array = obj.position;
+		this.velocity_array = obj.velocity;
+
 		// cartesian updates
-		this.position = new THREE.Vector3(obj.position[0], obj.position[1], obj.position[2]);
-		this.velocity = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2]);
-		this.acceleration = new THREE.Vector3();
+		this.position = new THREE.Vector3(obj.position[0][0], obj.position[0][1], obj.position[0][2]);
+		this.velocity = new THREE.Vector3(obj.velocity[0][0], obj.velocity[0][1], obj.velocity[0][2]);
 
 		// axis tilt, representing a rotation about the z direction in radians
 		this.obliquity = obj.obliquity;
@@ -224,7 +228,7 @@ class OrbitalBody {
 			var mesh	= new THREE.Mesh(geometry, material)
 			return mesh
 		} else {
-			var geometry	= new THREE.SphereGeometry(radius / PLANET_SCALE, 32, 32);
+			var geometry	= new THREE.SphereGeometry(20, 32, 32);
 			var material	= new THREE.MeshPhongMaterial({color: 0x00ffff});
 			var mesh = new THREE.Mesh(geometry, material);
 			return mesh;
@@ -233,7 +237,6 @@ class OrbitalBody {
 
 	create_rings(name) {
 		if (name == 'saturn') {
-			loaded_bodies.push[name];
 			// create destination canvas
 			var canvasResult	= document.createElement('canvas')
 			canvasResult.width	= 915
@@ -294,13 +297,11 @@ class OrbitalBody {
 		}
 	}
 
-	// call this after all the bits of acceleration have been added from each orbital body
-	update_kinematics(dt) {
-		// update 
-		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
-		this.position.add(this.velocity.clone().multiplyScalar(dt));
-		// need to resolve local spinning based on local axis, need to make that nice
-		this.theta += this.omega * dt;
+	update_kinematics(index) {
+		// update based on input index value, will be same for all bodies
+		this.velocity.set(this.velocity_array[index][0], this.velocity_array[index][1], this.velocity_array[index][2]);
+		this.position.set(this.position_array[index][0], this.position_array[index][1], this.position_array[index][2]);
+		this.theta = this.omega * (this.time[index] - this.start_time);
 	}
 
 	move_body() {
@@ -330,132 +331,6 @@ class OrbitalBody {
 		}
 	}
 }
-
-var burn = {booster: 0, brake: 0, roll_left: 0, roll_right: 0, yaw_left: 0, yaw_right: 0, pitch_up: 0, pitch_down: 0};
-
-onKeyDown = function( event ) {
-
-	if ( event.altKey ) {
-		return;
-	}
-	switch ( event.keyCode ) {
-
-		case 40: /* down arrow */ burn.brake = 1; break;
-		case 38: /* up arrow */ burn.booster = 1; break;
-
-		case 81: /* q */ burn.roll_left = 1; break;
-		case 69: /* e */ burn.roll_right = 1; break;
-
-		case 87: /* w */ burn.pitch_up = 1; break;
-		case 83: /* s */ burn.pitch_down = 1; break;
-
-		case 65: /* a */ burn.yaw_left = 1; break;
-		case 68: /* d */ burn.yaw_right = 1; break;
-
-	}
-};
-
-onKeyUp = function( event ) {
-
-	switch ( event.keyCode ) {
-
-		case 40: /* down arrow */ burn.brake = 0; break;
-		case 38: /* up arrow */ burn.booster = 0; break;
-
-		case 81: /* q */ burn.roll_left = 0; break;
-		case 69: /* e */ burn.roll_right = 0; break;
-
-		case 87: /* w */ burn.pitch_up = 0; break;
-		case 83: /* s */ burn.pitch_down = 0; break;
-
-		case 65: /* a */ burn.yaw_left = 0; break;
-		case 68: /* d */ burn.yaw_right = 0; break;
-	}
-};
-
-window.addEventListener('keydown', onKeyDown, false);
-window.addEventListener('keyup', onKeyUp, false);
-
-
-class SpaceShip {
-	constructor(group, position, velocity) {
-		this.name = 'hermes';
-		this.group = group;
-		
-		this.cockpit_view = false;
-		
-		this.position = position;
-		this.velocity = velocity;
-		this.acceleration = new THREE.Vector3();
-
-		this.theta_roll = 0;  // about the local central axis, x
-		this.theta_yaw = 0;  // about the local central crossed axis, y
-		this.theta_pitch = 0;  // about the local central cross axis, z
-		this.theta = new THREE.Vector3();
-		this.omega = new THREE.Vector3();
-		this.alpha = new THREE.Vector3();
-
-		this.mass = 1000000;  // one million kg
-		this.length = 300; // meters
-		this.radius = 25;  // average radius
-
-		this.I_yaw = 1/12 * this.mass * this.length * this.length;
-		this.I_pitch = this.I_yaw;
-		this.I_roll = 1/2 * this.mass * this.radius * this.radius;
-
-		this.booster_thrust = 10000000 * 4.44822;
-		this.brake_thrust = 5000000 * 4.44822;
-		this.roll_torque = this.I_roll;
-		this.yaw_torque = this.I_yaw;
-		this.pitch_torque = this.I_pitch;
-
-		this.host = undefined;
-
-		this.pointer = new THREE.Vector3(1, 0, 0);
-
-		this.move_body();
-		}
-
-	update_thrusters() {
-		this.alpha.set(0, 0, 0);
-		if (burn.booster) {
-			this.acceleration.add(this.pointer.clone().multiplyScalar(this.booster_thrust / this.mass));
-		}
-		if (burn.brake) {
-			this.acceleration.add(this.pointer.clone().multiplyScalar(-this.brake_thrust / this.mass));
-		}
-		if (burn.roll_right || burn.yaw_right || burn.pitch_up) {
-			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * burn.roll_right, 
-				this.yaw_torque / this.I_yaw * burn.yaw_right, this.pitch_torque / this.I_pitch * burn.pitch_up);
-			this.alpha.add(dir);
-		}
-		if (burn.roll_left || burn.yaw_left || burn.pitch_down) {
-			var dir = new THREE.Vector3(this.roll_torque / this.I_roll * burn.roll_left, 
-				this.yaw_torque / this.I_yaw * burn.yaw_left, this.pitch_torque / this.I_pitch * burn.pitch_down);
-			this.alpha.sub(dir);
-		}
-	}
-
-	update_kinematics(dt) {
-		// get WorldDirection gives you world direction of positive x-axis
-		this.pointer = this.group.getWorldDirection().normalize().cross(new THREE.Vector3(0, -1, 0));
-		// update 
-		this.velocity.add(this.acceleration.clone().multiplyScalar(dt));
-		this.position.add(this.velocity.clone().multiplyScalar(dt));
-		// need to resolve local spinning based on local axis, need to make that nice
-		this.omega.add(this.alpha.clone().multiplyScalar(dt));
-		this.theta.add(this.omega.clone().multiplyScalar(dt));
-	}
-
-	move_body() {
-		var x_comp = this.position.x / DISTANCE_SCALE;
-		var y_comp = this.position.y / DISTANCE_SCALE;
-		var z_comp = this.position.z / DISTANCE_SCALE;
-		this.group.position.set(x_comp, y_comp, z_comp);
-		this.group.rotation.set(this.theta.x, this.theta.y, this.theta.z);
-	}
-}
-
 
 // from http://jeromeetienne.github.io/threex.planets/examples/select.html#Saturn
 RingGeometry = function ( innerRadius, outerRadius, thetaSegments ) {
@@ -520,5 +395,4 @@ RingGeometry = function ( innerRadius, outerRadius, thetaSegments ) {
 
 	// rotate the geometry a bit to account for z being up
 	this.geo.rotateX(Math.PI / 2);
-
 };

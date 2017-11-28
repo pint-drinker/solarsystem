@@ -1,14 +1,11 @@
 
 // need the variables to be global, its so annoying because i dont know how to deal with scope
 var started = false;
-var paused;
 var tweening_rot;
 var tweening_tran;
 var trackball;
 var current_target;
 var scene = new THREE.Scene();
-var hermes;
-var cockpit_view = false;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
@@ -36,27 +33,17 @@ class SolarSystem {
     // body population info
     this.data = data;
 
-    paused = false;
     tweening_rot = false;
     tweening_tran = false;
 
-    // time and text tracking
-    this.frame_count = 0;
-    this.last_update_time = 0;
-    this.update_dt = DEFAULT_UPDATE_TIME;
-
     // set the time object
     this.date_holder = document.getElementById('date_holder');
-    this.current_date = new Date(this.data.sun.time);
-    this.current_time = this.data.sun.time;
+    this.current_date = new Date(INITIAL_TIME);
+    this.current_time = INITIAL_TIME;
     this.date_holder.innerHTML = 'Date: ' + this.current_date.toString();
 
     // set the time info object
     this.time_info_holder = document.getElementById('time_info_holder');
-    frame_rate = 0;
-    this.time_per_frame = 0;
-    this.time_factor = 0;
-    this.updateTime();
 
     // populate all the bodies
     this.bodies = createOrbitalBodies();
@@ -67,32 +54,12 @@ class SolarSystem {
 
     // world elements
     this.renderer = createRenderer(this.node);
-    this.hermes = undefined;
-
-    var loader = new THREE.TDSLoader( );
-    loader.load( 'library/Hermes.3ds', function ( object ) {
-          var obj = data.earth;
-          var pos = new THREE.Vector3(obj.position[0]*1.5, obj.position[1], obj.position[2]);
-          var v = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2]);
-          object.scale.set(0.03, 0.03, 0.03);
-          var bb = new THREE.Box3().setFromObject(object);
-          var mn = bb.min;
-          var mx = bb.max;
-          var sep = mx.clone().add(mn).multiplyScalar(-0.5);
-          var gp = new THREE.Group();
-          object.position.set(sep.x , sep.y / 2, sep.z / 2);
-          gp.add(object);
-          hermes = new SpaceShip(gp, pos, v);
-          scene.add( hermes.group );
-          loaded_bodies.push(hermes);
-    });
     this.scene = scene;
 
     // viewing
     this.camera = createCamera(this.node, this.bodies.sun.radius);
     this.scene.add(this.camera);
     this.scene.add(new THREE.AmbientLight(0xfafafa, 0.3));  // ambient light
-    // NOTE: if want to adjust scale might need to change this, like back to real for spaceship
     this.scene.add(new THREE.PointLight(0xffffff, 1, 11000, 1));  // point light decays to 0 when past pluto
 
     // for planet tracking and camera and spotlight updating
@@ -106,7 +73,6 @@ class SolarSystem {
     // now add everything to the scene
     for (var i in this.bodies) {
       this.scene.add(this.bodies[i].group);
-      loaded_bodies.push(this.bodies[i].name);
     }
 
     // add in the stars
@@ -129,16 +95,10 @@ class SolarSystem {
     this.dummy_body = new THREE.Object3D();
 
     console.log(this);
-    this.run();
-  }
 
-  onAllLoaded() {
-    this.hermes = loaded_bodies[loaded_bodies.length - 1];
-    this.bodies['hermes'] = this.hermes;
-    tweening_tran = true;
-    var pos2 = new THREE.Vector3(1, 1, 1).multiplyScalar(this.bodies.sun.radius * 0.75 / PLANET_SCALE);
-    var tween_tran = new TWEEN.Tween(this.camera.position).to({x: pos2.x, y: pos2.y, z: pos2.z}, 5000)
-    .easing(TWEEN.Easing.Quadratic.In).onComplete(onTweeningTranComplete).start();
+    this.last_update_time = performance.now();
+    this.update_dt = 500;
+    this.run();
   }
 
   updateAxCam() {
@@ -161,35 +121,11 @@ class SolarSystem {
   }
 
   updateBodies() {
-    // perform updating with delegated number of calculations per frame
-    for (var k = 0; k < numberOfCalculationsPerFrame; k++) {
-      // first need to reset the accelerations of all of the bodies
-      for (var key in this.bodies) {
-        this.bodies[key].acceleration.set(0, 0, 0);
-      }
-      // resolve all the accelerations
-      var tracking = [];
-      for (var key1 in this.bodies) {
-        tracking.push(key1);
-        for (var key2 in this.bodies) {
-          if (isInside(key2, tracking) == false) {
-            get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
-          } 
-        }
-      }
-      // add any user input accelerations to the hermes
-      // can only do burns when the time is at real time or slower
-      if (this.time_factor <= 2.0) {
-        this.bodies.hermes.update_thrusters(deltaT);
-      }
-
-      // now update all the telemetry of all the bodies
-      for (var key in this.bodies) {
-        this.bodies[key].update_kinematics(deltaT);
-      }
-    }
+    // get the index of the time vectors based on the global TIME variable
+    let ind = findClosestIndex(TIME, this.bodies.sun.time);
     // now move the actual bodies on the screen
     for (var key in this.bodies) {
+      this.bodies[key].update_kinematics(ind);
       this.bodies[key].move_body();
     }
   }
@@ -200,7 +136,7 @@ class SolarSystem {
   }
 
   showDate() {
-    this.current_date = new Date(this.current_time);
+    this.current_date = new Date(TIME);
     this.date_holder.innerHTML = 'Date: ' + this.current_date.toString();
   }
 
@@ -219,7 +155,7 @@ class SolarSystem {
     this.perspective_holder.innerHTML = 'Viewer Distance from Sun:<br />' + getDistanceString(this.viewer_distance);
   }
 
-  updateHermesInfo() {
+  updateShipInfo() {
     var hf = document.getElementById('hermes_info');
     // var pointer = this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
     var pointer = this.bodies.hermes.pointer;
@@ -287,7 +223,7 @@ class SolarSystem {
     }
     
     this.makeToTween(getCameraOffsetDestination(current_target, this.bodies.sun), dummy.rotation.clone());
-    this.setPlanetDeltaT(current_target);
+    // this.setPlanetDeltaT(current_target);
     trackball.enabled = true;
   }
 
@@ -372,45 +308,10 @@ class SolarSystem {
     this.bodyView();
   }
 
-  toHermesView() {
-    current_target = this.bodies.hermes;
-    this.bodies.hermes.cockpit_view = false;
-    this.bodyView();
-  }
-
-  toHermesCockpit() {
-    // current_target = this.bodies.hermes;
-    // this.bodies.hermes.cockpit_view = true;
-    // trackball.enabled = false;
-
-    // // this.bodyView();
-    // // get the camera to the position and then have it look down x axis, need to rack it to a coordinate system
-    // // just have the camera position be the same as the bodies and rotation as well
-    // this.updateCamera();
-
-    current_target = this.bodies.hermes;
-    this.bodies.hermes.cockpit_view = true;
-    this.bodyView();
-  }
-
-  updateCamera() { // not fucking workin at all, do path trackin now instead
-    // only use for now if in cockpit view
-    let p = this.bodies.hermes.group.position.clone();
-    let pointer = this.bodies.hermes.pointer.clone();  // local x-axis of ship
-    let zdir = this.bodies.hermes.group.getWorldDirection().normalize();
-    // p.add(zdir.multiplyScalar(5));
-    this.camera.position.set(p.x, p.y, p.z);
-    this.camera.updateProjectionMatrix();
-    // now need to make the camera offset point to look at
-    let off = p.add(pointer.multiplyScalar(2));
-    this.camera.lookAt(off);
-    this.camera.updateProjectionMatrix();
-  }
-
   onResetView() {
     current_target = this.bodies.sun;
     this.bodyView();
-    deltaT = DEFAULT_dT;
+    // deltaT = DEFAULT_dT;
   }
 
   toRealTime() {
@@ -505,12 +406,6 @@ class SolarSystem {
 
     this.toRealTime = this.toRealTime.bind(this);
     document.getElementById('real_time').onclick = this.toRealTime;
-
-    this.toHermesView = this.toHermesView.bind(this);
-    document.getElementById('hermes_view').onclick = this.toHermesView;
-
-    this.toHermesCockpit = this.toHermesCockpit.bind(this);
-    document.getElementById('hermes_cockpit').onclick = this.toHermesCockpit;
   }
 
   run() {
@@ -524,38 +419,28 @@ class SolarSystem {
 
   render() {
     TWEEN.update();
-    if (!tweening_rot) {   //!(current_target == hermes && hermes.cockpit_view)
+    if (!tweening_rot) {
       this.updateControls();
     }
     this.updateAxCam();
     this.updateSunGlow();
 
-    if (!paused  && !tweening_tran && started) {
+    if (!tweening_tran && started) {
       this.updateBodies();
-      this.updateDate();
     }
 
-    if (loaded_bodies.length == NUM_BODIES && !started) {
+    if (!started) {
       started = true;
-      this.onAllLoaded();
     }
 
     // time tracking
-    this.frame_count += 1;
     let t = performance.now();
     if (t - this.last_update_time > this.update_dt) {
-      frame_rate = Math.floor(this.frame_count / (t - this.last_update_time) * 1000);
       this.last_update_time = t;
       // update the date before resetting frame count
       this.showDate();
-      this.frame_count = 0;
-      this.updateTime();
       // update the viewer distance
       this.updatePerspective();
-      if (started) {
-        this.updateHermesInfo();
-        // console.log(this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize());  // the x direction is forward)
-      }
     }
     
     this.renderer.render(this.scene, this.camera);

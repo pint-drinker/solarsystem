@@ -17,34 +17,49 @@ def parse_ephemeris(file_path):
     :return: dictionary of ephemeris info
     """
     # initialize dictionary
-    d = {'time': 0, 'position': [], 'velocity': []}
+    d = {'time': [], 'position': [], 'velocity': []}
 
     file = open(file_path, 'r')
     lines = file.readlines()
     ct = 0
+    go = False
     for line in lines:
-        if ct == 2:
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['velocity'] = [float(p1[1]) * AU / DAY, float(p1[3]) * AU / DAY, float(p1[5]) * AU / DAY]
+        if '$$SOE' in line:  # begginign of ephemerides
+            go = True
+            continue
+        if '$$EOE' in line:  # end of ephemerides
             break
-        if ct == 1:
-            new_s = line.replace('=', ' ')
-            p1 = new_s.split()
-            d['position'] = [float(p1[1]) * AU, float(p1[3]) * AU, float(p1[5]) * AU]
-            ct = 2
-        if '= A.D. ' in line:
-            ct = 1
-            p1 = line.split()
-            date_string = p1[3] + ' ' + p1[4]  # grabbing the date string
-            dt = parser.parse(date_string)
-            date1 = datetime.strptime(str(dt), '%Y-%m-%d %H:%M:%S')
-            # need to get the number of milliseconds elapsed since Jan 1 1970, the beggining of UTC time
-            date_orig = datetime(1970, 1, 1)
-            difference = date1 - date_orig
-            # 5 hour offset from est to utc
-            elapsed_milliseconds = difference.total_seconds() * pow(10, 3) + 5 * 3600 * pow(10, 3)
-            d['time'] = elapsed_milliseconds
+        if go:
+            if ct == 0:
+                # time on this line
+                p1 = line.split()
+                date_string = p1[3] + ' ' + p1[4]  # grabbing the date string
+                dt = parser.parse(date_string)
+                date1 = datetime.strptime(str(dt), '%Y-%m-%d %H:%M:%S')
+                # need to get the number of milliseconds elapsed since Jan 1 1970, the beggining of UTC time
+                date_orig = datetime(1970, 1, 1)
+                difference = date1 - date_orig
+                # 5 hour offset from est to utc
+                elapsed_milliseconds = difference.total_seconds() * pow(10, 3) + 5 * 3600 * pow(10, 3)
+                d['time'].append(elapsed_milliseconds)
+                ct += 1
+            elif ct == 1:
+                # position on this line
+                new_s = line.replace('=', ' ')
+                p1 = new_s.split()
+                d['position'].append([round(float(p1[1]) * AU, 2), round(float(p1[3]) * AU, 2),
+                                      round(float(p1[5]) * AU, 2)])
+                ct += 1
+            elif ct == 2:
+                # velocity on this line
+                new_s = line.replace('=', ' ')
+                p1 = new_s.split()
+                d['velocity'].append([round(float(p1[1]) * AU / DAY, 2), round(float(p1[3]) * AU / DAY, 2),
+                                      round(float(p1[5]) * AU / DAY, 2)])
+                ct += 1
+            elif ct == 3:
+                # other info we dont use on this line, radial stuff
+                ct = 0
     return d
 
 
