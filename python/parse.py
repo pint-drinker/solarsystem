@@ -174,6 +174,13 @@ class PlanetConstants:
     pluto['obliquity'] = 10 * math.pi / 180
     planet_dict['pluto'] = pluto
 
+    pioneer10 = parse_ephemeris('/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/pioneer10.txt')
+    pioneer10['radius'] = 50
+    pioneer10['mass'] = 260
+    pioneer10['omega'] = 0
+    pioneer10['obliquity'] = 0
+    planet_dict['pioneer10'] = pioneer10
+
     with open('/Users/dwensberg/Desktop/development/solarsystem/src/parse.js', 'w') as outfile:
         outfile.write('data = ')
         json.dump(planet_dict, outfile)
