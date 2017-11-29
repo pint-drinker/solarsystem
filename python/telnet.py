@@ -9,6 +9,7 @@ LOCAL_INFO = '/Users/dwensberg/Desktop/development/solarsystem/src/info/'
 MACHINE_NAME = 'ssd.jpl.nasa.gov'
 FTP_DIR = '/pub/ssd/'
 EMAIL_ADDRESS = 'dana.wensberg@gmail.com'
+INTERVAL = '1d'
 
 
 class Constants:
@@ -94,7 +95,7 @@ def write_ephemerides(start_date, end_date, bodies):
         child.expect_exact('] : ')
         child.sendline(end_date)
         child.expect_exact('] : ')
-        child.sendline('3h')  # sending interval of collection
+        child.sendline(INTERVAL)  # sending interval of collection
         child.expect_exact('] : ')
         child.sendline('y')
         child.expect_exact(' ? : ', timeout=60)
