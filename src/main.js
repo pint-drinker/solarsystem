@@ -266,9 +266,9 @@ class SolarSystem {
       deltaT = 2 * Math.PI / current_target.host.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE;
     } else {
       if (body.name == 'mercury') {
-        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 10;
+        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 60;
       } else if (body.name == 'venus') {
-        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 4;
+        deltaT = 2 * Math.PI / current_target.omega / numberOfCalculationsPerFrame / FRAMES_TO_ROTATE / 25;
       } else if (body.name == 'hermes') {
         deltaT = 1 / FRAMES_TO_ROTATE / numberOfCalculationsPerFrame;
       } else {

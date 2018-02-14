@@ -10,7 +10,7 @@ getTimeString = function(seconds) {
   let d = Math.floor((seconds % 604800) / 86400) ;  // days
   let h = Math.floor((seconds % 86400) / 3600);  // hours
   let m = Math.floor((seconds % 3600) / 60);  // minutes
-  let s = seconds % 60;  // seconds
+  let s = Math.ceil(seconds % 60);  // seconds
 
   // now construct the string
   var st = '';
@@ -26,7 +26,9 @@ getTimeString = function(seconds) {
   if (m) {
     st += m.toString() + 'm ';
   }
-  st += s.toFixed(2).toString() + 's ';
+  if (s) {
+    st += s.toString() + 's ';
+  };
   
   return st; 
 }
