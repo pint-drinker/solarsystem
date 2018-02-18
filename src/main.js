@@ -218,7 +218,8 @@ class SolarSystem {
       this.bodies.sun.position).length();
     this.perspective_holder.innerHTML = 'Viewer Distance from Sun:<br />' + getDistanceString(this.viewer_distance);
   }
-
+  
+  // turn this on and off for when i click the hermes button, for real here
   updateHermesInfo() {
     var hf = document.getElementById('hermes_info');
     // var pointer = this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
@@ -555,6 +556,10 @@ class SolarSystem {
       if (started) {
         this.updateHermesInfo();
         // console.log(this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize());  // the x direction is forward)
+        var hf = document.getElementById('hermes_info');
+        if (current_target != this.bodies.hermes) {
+          hf.innerHTML = "";
+        }
       }
     }
     
