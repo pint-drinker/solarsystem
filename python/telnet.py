@@ -1,139 +1,98 @@
-# for facilitating communication with telnet and pulling it down locally
-
 import time
-import pexpect
+import os
+from datetime import timedelta, datetime
 
-# time the whole process overall
-st = time.time()
+import requests
 
-# start date marker
-start_date = '2015-Jan-4 01:37:00'  # roughly the periapsis from 2015
-end_date = '2015-Jan-4 01:47:00'  # to allow for one time interval, Mathc this to martian movie timing
+from parse import build_planet_info_and_parse_ephemeris
 
-# these will correspond to the information we extract about every single body in the system, first with
-# their physical parameters, and then their ephemeris data at the given input time
-# all of these will be grabbed and saved via an ftp connection at the end of parsing for info
-sun = {'id': 10, 'local': 'sun.txt', 'remote_info': '', 'remote_eph': ''}
-mercury = {'id': 199, 'local': 'mercury.txt', 'remote_info': '', 'remote_eph': ''}
-venus = {'id': 299, 'local': 'venus.txt', 'remote_info': '', 'remote_eph': ''}
-earth = {'id': 399, 'local': 'earth.txt', 'remote_info': '', 'remote_eph': ''}
-moon = {'id': 301, 'local': 'moon.txt', 'remote_info': '', 'remote_eph': ''}
-mars = {'id': 499, 'local': 'mars.txt', 'remote_info': '', 'remote_eph': ''}
-jupiter = {'id': 599, 'local': 'jupiter.txt', 'remote_info': '', 'remote_eph': ''}
-io = {'id': 501, 'local': 'io.txt', 'remote_info': '', 'remote_eph': ''}
-europa = {'id': 502, 'local': 'europa.txt', 'remote_info': '', 'remote_eph': ''}
-ganymede = {'id': 503, 'local': 'ganymede.txt', 'remote_info': '', 'remote_eph': ''}
-callisto = {'id': 504, 'local': 'callisto.txt', 'remote_info': '', 'remote_eph': ''}
-saturn = {'id': 699, 'local': 'saturn.txt', 'remote_info': '', 'remote_eph': ''}
-titan = {'id': 606, 'local': 'titan.txt', 'remote_info': '', 'remote_eph': ''}
-uranus = {'id': 799, 'local': 'uranus.txt', 'remote_info': '', 'remote_eph': ''}
-neptune = {'id': 899, 'local': 'neptune.txt', 'remote_info': '', 'remote_eph': ''}
-triton = {'id': 801, 'local': 'triton.txt', 'remote_info': '', 'remote_eph': ''}
-pluto = {'id': 999, 'local': 'pluto.txt', 'remote_info': '', 'remote_eph': ''}
-bodies = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto,
-          saturn, titan, uranus, neptune, triton, pluto]
+INPUT_DATE_FORMAT = "%Y-%b-%d %H:%M:%S"
+INFO_DIRECTORY = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src/info'
+)
 
-# path to get us to the telnet interface to grab ephemeris
-open_path = 'telnet horizons.jpl.nasa.gov 6775'
+SUN = dict(id=10, name='Sun', local='sun.txt')
+MERCURY = dict(id=199, name='Mercury', local='mercury.txt')
+VENUS = dict(id=299, name='Venus', local='venus.txt')
+EARTH = dict(id=399, name='Earth', local='earth.txt')
+MOON = dict(id=301, name='Moon', local='moon.txt')
+MARS = dict(id=499, name='Mars', local='mars.txt')
+JUPITER = dict(id=599, name='Jupiter', local='jupiter.txt')
+IO = dict(id=501, name='Io', local='io.txt')
+EUROPA = dict(id=502, name='Europa', local='europa.txt')
+GANYMEDE = dict(id=503, name='Ganymede', local='ganymede.txt')
+CALLISTO = dict(id=504, name='Callisto', local='callisto.txt')
+SATURN = dict(id=699, name='Saturn', local='saturn.txt')
+TITAN = dict(id=606, name='Titan', local='titan.txt')
+URANUS = dict(id=799, name='Uranus', local='uranus.txt')
+NEPTUNE = dict(id=899, name='Neptune', local='neptune.txt')
+TRITON = dict(id=801, name='Triton', local='triton.txt')
+PLUTO = dict(id=999, name='Pluto', local='pluto.txt')
 
-# open up the pexpect instance
-child = pexpect.spawn(open_path)
-child.expect ('Horizons> ')
-child.sendline('PAGE')  # turn off the paging
-child.expect ('Horizons> ')
+BODIES = [
+    SUN, MERCURY, VENUS, EARTH, MOON, MARS, JUPITER, IO, EUROPA, GANYMEDE, CALLISTO, SATURN, TITAN, URANUS, NEPTUNE, TRITON, PLUTO
+]
 
-# now loop through the bodies information stuff and collect all the names of the info and ephemeris
-# files that we will pull down using an ftp connection at the end
-for body in bodies:
-    child.sendline(str(body['id']))  # index for the planet
-    child.expect('<cr>: ')
-    # collects general info that we then need to save
-    child.sendline('Ftp')  # store this file in the jpl server remotely to pull down
-    child.expect('Select...')
-    # grab file name from the last child output
-    check_str = str(child.before)
-    search_phrase = 'File name   :  '
-    index = check_str.find(search_phrase)  # gives us the index to start from
-    # now look for the index of when it switches to the next line
-    index_end = check_str.find('\n', index + 1)
-    # now get the file name by grabbing between these index values
-    body['remote_info'] = check_str[index + len(search_phrase):index_end - 2]
 
-    # now go through the process to get the ephemeris information
-    child.sendline('E')
-    child.expect(': ')
-    child.sendline('v')
-    child.expect(': ')
-    if bodies.index(body) == 0:
-        child.sendline('@sun')  # setting the sun as the reference frame
-    else:
-        child.sendline('y')  # telling the api to use previous center
-    child.expect(': ')
-    child.sendline('eclip')
-    child.expect(': ')
-    child.sendline(start_date)
-    child.expect(': ')
-    child.sendline(end_date)
-    child.expect(': ')
-    child.sendline('10m')  # sending interval of collection
-    child.expect(': ')
-    child.sendline('y')
-    child.expect('Select...')
-    child.sendline('Ftp')  # store this file in the jpl server remotely to pull down
-    child.expect('Select...')
-    # grab file name from the last child output
-    check_str = str(child.before)
-    search_phrase = 'File name   :  '
-    index = check_str.find(search_phrase)  # gives us the index to start from
-    # now look for the index of when it switches to the next line
-    index_end = check_str.find('\n', index + 1)
-    # now get the file name by grabbing between these index values
-    body['remote_eph'] = check_str[index + len(search_phrase):index_end - 2]
+def fetch_body_data(body_id: int, start_date: datetime) -> dict:
+    """
+    Fetch the data for a given body ID and start date.
+    Look here for more docs on Horizons API: https://ssd-api.jpl.nasa.gov/doc/horizons.html
+    :param body_id:
+    :param start_date:
+    :return:
+    """
+    url = "https://ssd.jpl.nasa.gov/api/horizons.api"
+    start_date_str = start_date.isoformat()
+    end_date_str = (start_date + timedelta(minutes=10)).isoformat()
+    params = {
+        "format": "json",
+        "COMMAND": f"'{body_id}'",
+        "OBJ_DATA": "YES",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "VECTORS",
+        "CENTER": "'@sun'",
+        "START_TIME": start_date_str,
+        "STOP_TIME": end_date_str,
+        "STEP_SIZE": "10m",
+        "REF_PLANE": "ECLIPTIC",
+        "OUT_UNITS": "AU-D",
+        "VEC_TABLE": "3",  # 3 for vectors as specified
+        "VEC_LABELS": "YES",
+        "CSV_FORMAT": "NO",
+        "TLIST": None  # Not needed unless specific times are required
+    }
 
-    # now prepare the console for another round of info grabbing
-    child.sendline('New-case')
-    child.expect('Horizons> ')
+    response = requests.get(url, params=params)
+    return response.json()
 
-child.close()
 
-print('Done with finding info...')
+if __name__ == '__main__':
+    default_date = "2015-Jan-4 01:37:00"
+    start_date_input = input(
+        f"Please enter start date in the format of YYYY-MM-DD HH:MM:SS (leave blank to use the default date of {default_date}): "
+    )
+    start_date_input = start_date_input or default_date
+    try:
+        start = datetime.strptime(start_date_input, INPUT_DATE_FORMAT)
+    except ValueError:
+        raise ValueError("Incorrect date format, please try again.")
 
-# now look to populating these files into our local folders
-local_eph = '/Users/dwensberg/Desktop/development/solarsystem/src/ephemeris/'
-local_info = '/Users/dwensberg/Desktop/development/solarsystem/src/info/'
+    print(f'Using start date of: {start.strftime(INPUT_DATE_FORMAT)}')
 
-machine_name = 'ssd.jpl.nasa.gov'
-ftp_dir = '/pub/ssd/'
-email_address = 'dana.wensberg@gmail.com'
+    t1 = time.time()
+    if not os.path.exists(INFO_DIRECTORY):
+        os.makedirs(INFO_DIRECTORY)
 
-# create new pexpect object and open it to the ftp to pull down files
-grab = pexpect.spawn('ftp ' + machine_name)
-grab.expect('Name ')
-grab.sendline('ftp')
-grab.expect('Password:')
-grab.sendline(email_address)
-grab.expect('ftp> ')
-grab.sendline('lcd ' + local_info)
-grab.expect('ftp> ')
-grab.sendline('cd ' + ftp_dir)
-grab.expect('ftp> ')
+    for body in BODIES:
+        interval_time = time.time()
+        json_payload = fetch_body_data(body_id=body['id'], start_date=start)
+        with open(os.path.join(INFO_DIRECTORY, body["local"]), 'w') as f:
+            f.write(json_payload['result'])
+        print(f'Fetched info for {body["name"]} in {round(time.time() - interval_time, 2)} seconds')
+    print(f'Total time to fetch: {round(time.time() - t1, 2)}')
 
-# loop through the bodies and pull down the files, first info, and then ephemeris
-for body in bodies:
-    grab.sendline('get ' + body['remote_info'] + ' ' + body['local'])
-    grab.expect('ftp> ')
-
-# now move the local directory to the ephemeris folder and pull down in a loop again
-grab.sendline('lcd ' + local_eph)
-grab.expect('ftp> ')
-for body in bodies:
-    grab.sendline('get ' + body['remote_eph'] + ' ' + body['local'])
-    grab.expect('ftp> ')
-
-#should have all information populated into the two local folders, so now kill the ftp
-grab.close()
-
-print('Done with pulling info down...')
-
-print('')
-print('Total time: ' + str(time.time() - st))
+    t2 = time.time()
+    build_planet_info_and_parse_ephemeris()
+    print(f'Successfully parsed ephemeris in {round(time.time() - t2, 2)} seconds')
+    print('Go ahead and start up the simulation!')

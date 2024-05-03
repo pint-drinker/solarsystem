@@ -139,6 +139,3 @@ getCameraObliqueDestination = function(ob, pos) {
   return location;
 
 }
-
-
-

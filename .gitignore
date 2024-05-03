@@ -1,0 +1,6 @@
+.idea
+.DS_STORE
+src/ephemeris
+src/info
+PLANET_DATA.js
+__pycache__

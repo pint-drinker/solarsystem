@@ -1,0 +1,127 @@
+*******************************************************************************
+ Revised: Apr 03, 2024              134340 Pluto                            999
+ 
+ Pre-computed solution PLU060/DE440. Fit to post New Horizons encounter and
+ Gaia data through 2023. For discussion, see ...
+
+ M. Brozovic, R. A. Jacobson (2024) "Post-New Horizons orbits and masses
+ for the satellites of Pluto". AJ (in press)
+
+ PHYSICAL DATA (updated 2021-Jun-07; Mc= Charon mass, radius is IAU 2015):
+  Mass x10^22 (kg)      = 1.307+-0.018    Volume, 10^10 km^3    = 0.697
+  GM (planet) km^3/s^2  = 869.326         Density (R=1195 km)   = 1.86 g/cm^3
+  GM 1-sigma, km^3/s^2  = 0.4             Surface gravity       = 0.611 m/s^2 
+  Vol. mean radius (km) = 1188.3+-1.6     Mass ratio (Mc/Mp)    = 0.122
+  Sidereal rot. period  = 153.29335198 h  Sid. rot. rat, rad/s  = 0.0000113856
+  Mean solar day, h     = 153.2820        Mean orbit velocity   = 4.67 km/s
+  Sidereal orbit period = 249.58932 yr    Escape speed, km/s    = 1.21            
+                                 Perihelion  Aphelion    Mean
+  Solar Constant (W/m^2)         1.56        0.56        0.88
+  Maximum Planetary IR (W/m^2)   0.8         0.3         0.5
+  Minimum Planetary IR (W/m^2)   0.8         0.3         0.5
+*******************************************************************************
+
+
+*******************************************************************************
+Ephemeris / API_USER Thu May  2 19:29:35 2024 Pasadena, USA      / Horizons
+*******************************************************************************
+Target body name: Pluto (999)                     {source: plu060_merged}
+Center body name: Sun (10)                        {source: plu060_merged}
+Center-site name: BODY CENTER
+*******************************************************************************
+Start time      : A.D. 2015-Jan-04 01:37:00.0000 TDB
+Stop  time      : A.D. 2015-Jan-04 01:47:00.0000 TDB
+Step-size       : 10 minutes
+*******************************************************************************
+Center geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}
+Center cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}
+Center radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}
+Output units    : AU-D
+Calendar mode   : Mixed Julian/Gregorian
+Output type     : GEOMETRIC cartesian states
+Output format   : 3 (position, velocity, LT, range, range-rate)
+Reference frame : Ecliptic of J2000.0
+*******************************************************************************
+JDTDB
+   X     Y     Z
+   VX    VY    VZ
+   LT    RG    RR
+*******************************************************************************
+$$SOE
+2457026.567361111 = A.D. 2015-Jan-04 01:37:00.0000 TDB 
+ X = 7.407341847526805E+00 Y =-3.191881796584994E+01 Z = 1.272269106080381E+00
+ VX= 3.113735600599764E-03 VY= 5.568299765953619E-05 VZ=-9.203154375760206E-04
+ LT= 1.893893051796962E-01 RG= 3.279174167776809E+01 RR= 6.134556635925969E-04
+2457026.574305556 = A.D. 2015-Jan-04 01:47:00.0000 TDB 
+ X = 7.407363470451744E+00 Y =-3.191881757930121E+01 Z = 1.272262715182302E+00
+ VX= 3.113666800170453E-03 VY= 5.564310819180925E-05 VZ=-9.202631283858322E-04
+ LT= 1.893893297845845E-01 RG= 3.279174593797246E+01 RR= 6.134831328125021E-04
+$$EOE
+*******************************************************************************
+ 
+TIME
+
+  Barycentric Dynamical Time ("TDB" or T_eph) output was requested. This
+continuous coordinate time is equivalent to the relativistic proper time
+of a clock at rest in a reference frame co-moving with the solar system
+barycenter but outside the system's gravity well. It is the independent
+variable in the solar system relativistic equations of motion.
+
+  TDB runs at a uniform rate of one SI second per second and is independent
+of irregularities in Earth's rotation.
+ 
+CALENDAR SYSTEM
+
+  Mixed calendar mode was active such that calendar dates after AD 1582-Oct-15
+(if any) are in the modern Gregorian system. Dates prior to 1582-Oct-5 (if any)
+are in the Julian calendar system, which is automatically extended for dates
+prior to its adoption on 45-Jan-1 BC.  The Julian calendar is useful for
+matching historical dates. The Gregorian calendar more accurately corresponds
+to the Earth's orbital motion and seasons. A "Gregorian-only" calendar mode is
+available if such physical events are the primary interest.
+
+REFERENCE FRAME AND COORDINATES
+
+  Ecliptic at the standard reference epoch
+
+    Reference epoch: J2000.0
+    X-Y plane: adopted Earth orbital plane at the reference epoch
+               Note: IAU76 obliquity of 84381.448 arcseconds wrt ICRF X-Y plane
+    X-axis   : ICRF
+    Z-axis   : perpendicular to the X-Y plane in the directional (+ or -) sense
+               of Earth's north pole at the reference epoch.
+
+  Symbol meaning [1 au= 149597870.700 km, 1 day= 86400.0 s]:
+
+    JDTDB    Julian Day Number, Barycentric Dynamical Time
+      X      X-component of position vector (au)
+      Y      Y-component of position vector (au)
+      Z      Z-component of position vector (au)
+      VX     X-component of velocity vector (au/day)                           
+      VY     Y-component of velocity vector (au/day)                           
+      VZ     Z-component of velocity vector (au/day)                           
+      LT     One-way down-leg Newtonian light-time (day)
+      RG     Range; distance from coordinate center (au)
+      RR     Range-rate; radial velocity wrt coord. center (au/day)
+
+ABERRATIONS AND CORRECTIONS
+
+ Geometric state vectors have NO corrections or aberrations applied.
+
+Computations by ...
+
+    Solar System Dynamics Group, Horizons On-Line Ephemeris System
+    4800 Oak Grove Drive, Jet Propulsion Laboratory
+    Pasadena, CA  91109   USA
+
+    General site: https://ssd.jpl.nasa.gov/
+    Mailing list: https://ssd.jpl.nasa.gov/email_list.html
+    System news : https://ssd.jpl.nasa.gov/horizons/news.html
+    User Guide  : https://ssd.jpl.nasa.gov/horizons/manual.html
+    Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
+                  API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
+                  command-line   telnet ssd.jpl.nasa.gov 6775
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/hrzn_batch.txt
+                  scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
+    Author      : Jon.D.Giorgini@jpl.nasa.gov
+*******************************************************************************

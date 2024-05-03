@@ -171,8 +171,3 @@ createOrbitalBodies = function() {
     }
     return bodies;
 }
-
-
-
-
-
