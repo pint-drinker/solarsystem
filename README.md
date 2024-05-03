@@ -43,6 +43,8 @@ To run the simulator with these initial conditions, follow these steps:
 4. The simulator will now run on the `0.0.0.0:8000` address on your browser 
 5. Copy and paste this url: `http://localhost:8000/` or `http://0.0.0.0:8000/` into your browser to start exploring!
 
+**Give the UI a few second to load! It takes about 10 seconds to load in the mesh objects...**
+
 To generate your own initial conditions (not required), follow these steps:
 
 * Navigate to `python` directory and run `python -m telnet` and enter the desired start date (or use the default date)

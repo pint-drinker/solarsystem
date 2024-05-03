@@ -1,5 +1,3 @@
-
-
 class ThreeAxes {
   constructor(node, camera) {
     this.node = node;

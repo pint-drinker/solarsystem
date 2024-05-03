@@ -1,5 +1,4 @@
-
-// need the variables to be global, its so annoying because i dont know how to deal with scope
+// need the variables to be global...ideally we refactor this at some point...
 var started = false;
 var paused;
 var tweening_rot;
@@ -8,7 +7,6 @@ var trackball;
 var current_target;
 var scene = new THREE.Scene();
 var hermes;
-var cockpit_view = false;
 
 function onTweeningRotComplete() {
   trackball.enabled = true;
@@ -222,7 +220,6 @@ class SolarSystem {
   // turn this on and off for when i click the hermes button, for real here
   updateHermesInfo() {
     var hf = document.getElementById('hermes_info');
-    // var pointer = this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize();
     var pointer = this.bodies.hermes.pointer;
     var boosting = false;
     for (var item in burn) {
@@ -375,31 +372,13 @@ class SolarSystem {
 
   toHermesView() {
     current_target = this.bodies.hermes;
-    this.bodies.hermes.cockpit_view = false;
     this.bodyView();
   }
 
-  toHermesCockpit() {
-    // current_target = this.bodies.hermes;
-    // this.bodies.hermes.cockpit_view = true;
-    // trackball.enabled = false;
-
-    // // this.bodyView();
-    // // get the camera to the position and then have it look down x axis, need to rack it to a coordinate system
-    // // just have the camera position be the same as the bodies and rotation as well
-    // this.updateCamera();
-
-    current_target = this.bodies.hermes;
-    this.bodies.hermes.cockpit_view = true;
-    this.bodyView();
-  }
-
-  updateCamera() { // not fucking workin at all, do path trackin now instead
-    // only use for now if in cockpit view
+  updateCamera() {
+    // NOTE: getting some bugs with trying to manipulate the hermes
     let p = this.bodies.hermes.group.position.clone();
     let pointer = this.bodies.hermes.pointer.clone();  // local x-axis of ship
-    let zdir = this.bodies.hermes.group.getWorldDirection().normalize();
-    // p.add(zdir.multiplyScalar(5));
     this.camera.position.set(p.x, p.y, p.z);
     this.camera.updateProjectionMatrix();
     // now need to make the camera offset point to look at
@@ -509,9 +488,6 @@ class SolarSystem {
 
     this.toHermesView = this.toHermesView.bind(this);
     document.getElementById('hermes_view').onclick = this.toHermesView;
-
-    this.toHermesCockpit = this.toHermesCockpit.bind(this);
-    document.getElementById('hermes_cockpit').onclick = this.toHermesCockpit;
   }
 
   run() {
@@ -525,7 +501,7 @@ class SolarSystem {
 
   render() {
     TWEEN.update();
-    if (!tweening_rot) {   //!(current_target == hermes && hermes.cockpit_view)
+    if (!tweening_rot) {
       this.updateControls();
     }
     this.updateAxCam();
@@ -555,7 +531,6 @@ class SolarSystem {
       this.updatePerspective();
       if (started) {
         this.updateHermesInfo();
-        // console.log(this.bodies.hermes.group.localToWorld(new THREE.Vector3(1, 0, 0)).normalize());  // the x direction is forward)
         var hf = document.getElementById('hermes_info');
         if (current_target != this.bodies.hermes) {
           hf.innerHTML = "";
@@ -568,7 +543,7 @@ class SolarSystem {
   }
 }
 
-// now call everything
+// now call everything...this will actually render the scene
 var system = new SolarSystem();
 
 
