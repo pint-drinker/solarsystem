@@ -141,8 +141,8 @@ setupGui = function() {
 createOrbitalBodies = function() {
 	// create the bodies from 
 	bodies = {};
-	for (var key in data) {
-      bodies[key] = new OrbitalBody(data[key], key);
+	for (const [key, bodyObj] of Object.entries(GLOBAL_BODY_DATA)) {
+      bodies[key] = new OrbitalBody(bodyObj, key);
     }
 
     // now add all the moons to their appropriate hosts

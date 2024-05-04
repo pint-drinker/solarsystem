@@ -32,7 +32,7 @@ class SolarSystem {
     this.nodeHeight = window.innerHeight;
 
     // body population info
-    this.data = data;
+    this.data = GLOBAL_BODY_DATA;
 
     paused = false;
     tweening_rot = false;
@@ -69,7 +69,7 @@ class SolarSystem {
 
     var loader = new THREE.TDSLoader( );
     loader.load( 'library/Hermes.3ds', function ( object ) {
-          var obj = data.earth;
+          var obj = GLOBAL_BODY_DATA.earth;
           var pos = new THREE.Vector3(obj.position[0]*1.5, obj.position[1], obj.position[2]);
           var v = new THREE.Vector3(obj.velocity[0], obj.velocity[1], obj.velocity[2]);
           object.scale.set(0.03, 0.03, 0.03);

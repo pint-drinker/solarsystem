@@ -6,7 +6,7 @@ var NUM_BODIES = 18;
 class OrbitalBody {
 	constructor(obj, name) {
 		this.name = name;
-		this.group = new THREE.Group();  // possibly for moons and shit
+		this.group = new THREE.Group();
 
 		this.mass = obj.mass;
 		this.radius = obj.radius;

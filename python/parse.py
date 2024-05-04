@@ -188,7 +188,7 @@ def build_planet_info_and_parse_ephemeris():
     planet_dict['pluto'] = pluto
 
     with open(PARSED_FILE, 'w') as outfile:
-        outfile.write('data = ')
+        outfile.write('GLOBAL_PLANET_DATA = ')
         json.dump(planet_dict, outfile)
 
 
