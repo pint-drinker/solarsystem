@@ -13,7 +13,7 @@ const SHADOWS_ENABLED = false;
 const G = 6.67408 * Math.pow(10, -11);
 
 const TRACKBALL_DEFAULTS = {
-	rotateSpeed: 2.0,
+    rotateSpeed: 2.0,
     zoomSpeed: 2.0,
     panSpeed: 2.0,
     noZoom: false,
@@ -23,7 +23,7 @@ const TRACKBALL_DEFAULTS = {
 };
 
 const SCENE_DEFAULTS = {
-	axes_shrink_factor: 5,
-	cam_distance: 30,
-	scale_length: 40,
+    axes_shrink_factor: 5,
+    cam_distance: 30,
+    scale_length: 40,
 };
