@@ -121,7 +121,7 @@ class SolarSystem {
         this.updatePerspective();
 
         // CREATING GUI SLIDERS
-        this.gui = setupGui();  // defined in setup
+        this.timeControls = setupTimeControls();  // defined in setup
 
         this.tweening = false;
         this.dummy_body = new THREE.Object3D();
@@ -160,17 +160,17 @@ class SolarSystem {
 
     updateBodies() {
         // perform updating with delegated number of calculations per frame
-        for (var k = 0; k < NUMBER_OF_CALCULATIONS_PER_FRAME; k++) {
+        for (const k = 0; k < NUMBER_OF_CALCULATIONS_PER_FRAME; k++) {
             // first need to reset the accelerations of all of the bodies
-            for (var key in this.bodies) {
+            for (const key in this.bodies) {
                 this.bodies[key].acceleration.set(0, 0, 0);
             }
             // resolve all the accelerations
-            var tracking = [];
-            for (var key1 in this.bodies) {
-                tracking.push(key1);
-                for (var key2 in this.bodies) {
-                    if (isInside(key2, tracking) == false) {
+            const tracking = new Set();
+            for (const key1 in this.bodies) {
+                tracking.add(key1);
+                for (const key2 in this.bodies) {
+                    if (!tracking.has(key2)) {
                         get_acceleration_contribution(this.bodies[key1], this.bodies[key2]);
                     }
                 }
@@ -182,12 +182,12 @@ class SolarSystem {
             }
 
             // now update all the telemetry of all the bodies
-            for (var key in this.bodies) {
+            for (const key in this.bodies) {
                 this.bodies[key].update_kinematics(DELTA_T);
             }
         }
         // now move the actual bodies on the screen
-        for (var key in this.bodies) {
+        for (const key in this.bodies) {
             this.bodies[key].move_body();
         }
     }

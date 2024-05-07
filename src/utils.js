@@ -30,17 +30,7 @@ getTimeString = function (seconds) {
         st += s.toString() + 's ';
     }
 
-
     return st;
-}
-
-isInside = function (item, array) {
-    for (var i = 0; i < array.length; i++) {
-        if (item == array[i]) {
-            return true;
-        }
-    }
-    return false;
 }
 
 getDistanceString = function (meters) {
@@ -53,15 +43,6 @@ getDistanceString = function (meters) {
     st += Mkm.toString() + ' Million km';
     return st;
 }
-
-var week_dt = 0;
-var day_dt = 0;
-var hour_dt = 0;
-var minute_dt = 0;
-var second_dt = 0;
-var NUMBER_OF_CALCULATIONS_PER_FRAME = DEFAULT_FRAMES;
-var DELTA_T = DEFAULT_dT;
-var FRAME_RATE = 60;
 
 resolveTimeStep = function (weeks_per_sec, calc_per_frame, frames_per_sec) {
     return 604800 / calc_per_frame / frames_per_sec * weeks_per_sec
@@ -136,5 +117,4 @@ getCameraObliqueDestination = function (ob, pos) {
         location.z += ob.radius * 2 / PLANET_SCALE;
     }
     return location;
-
 }

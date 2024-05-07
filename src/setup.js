@@ -18,7 +18,6 @@ createCamera = function (node, radius) {
     return camera;
 }
 
-
 setUpControls = function (camera, renderer) {
     const trackball = new TrackballControls(camera, renderer.domElement);
     trackball.rotateSpeed = TRACKBALL_DEFAULTS.rotateSpeed;
@@ -30,7 +29,6 @@ setUpControls = function (camera, renderer) {
     trackball.dynamicDampingFactor = TRACKBALL_DEFAULTS.dynamicDampingFactor;
     return trackball;
 }
-
 
 createStars = function () {
     var radius = 5000;
@@ -97,8 +95,18 @@ createGlow = function (orbital_body) {
     return glow;
 }
 
+var week_dt = 0;
+var day_dt = 0;
+var hour_dt = 0;
+var minute_dt = 0;
+var second_dt = 0;
+// establish global variables for access elsewhere
+var NUMBER_OF_CALCULATIONS_PER_FRAME = DEFAULT_FRAMES;
+var DELTA_T = DEFAULT_dT;
+var FRAME_RATE = 60;
+
 // setting up gui
-setupGui = function () {
+setupTimeControls = function () {
     var gui = new dat.GUI();
     // time scaling units are in weeks
     var parameters = {
